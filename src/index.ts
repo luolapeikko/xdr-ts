@@ -1,2 +1,2 @@
-export * from './xdrBuffer';
 export * from './xdr';
+export * from './xdrBuffer';

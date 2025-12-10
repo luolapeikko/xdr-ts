@@ -8,7 +8,7 @@ export interface IXdrBuffer {
 	readDouble(): bigint;
 	readFloat(): number;
 	readFloatDouble(): number;
-    readIntArray(): number[];
+	readIntArray(): number[];
 	// write methods
 	writeByte(value: number): this;
 	writeInt(value: number): this;

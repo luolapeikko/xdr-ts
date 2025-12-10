@@ -1,8 +1,5 @@
-import 'mocha';
-import * as chai from 'chai';
+import {describe, expect, it} from 'vitest';
 import {XdrBuffer, XdrInt} from '../src/';
-
-const expect = chai.expect;
 
 describe('Test', function () {
 	describe('Test', function () {
