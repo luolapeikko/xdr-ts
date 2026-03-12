@@ -1,13 +1,13 @@
-import {IXdrBuffer} from '../types/IXdrBuffer';
+import type {IXdrBuffer} from '../types/IXdrBuffer';
 
 export abstract class XdrBase<T> {
 	protected _value: T | undefined;
-	constructor(value?: T) {
+	public constructor(value?: T) {
 		this._value = value;
 	}
 	public abstract encode(xdr: IXdrBuffer): void;
 	public abstract decode(xdr: IXdrBuffer): void;
-	get value(): T {
+	public get value(): T {
 		if (!this._value) {
 			throw new TypeError('Value is not set');
 		}

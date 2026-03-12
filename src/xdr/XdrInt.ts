@@ -1,4 +1,4 @@
-import {IXdrBuffer} from '../types/IXdrBuffer';
+import type {IXdrBuffer} from '../types/IXdrBuffer';
 import {XdrBase} from './XdrBase';
 
 export class XdrInt extends XdrBase<number> {

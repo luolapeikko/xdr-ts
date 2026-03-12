@@ -1,7 +1,7 @@
 export class ReadStreamBuffer {
 	private pointer: number;
 	private buffer: Buffer;
-	constructor(buffer: Buffer) {
+	public constructor(buffer: Buffer) {
 		this.pointer = 0;
 		this.buffer = buffer;
 	}

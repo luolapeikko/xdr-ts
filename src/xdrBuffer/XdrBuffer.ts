@@ -1,10 +1,10 @@
-import {IXdrBuffer} from '../types/IXdrBuffer';
+import type {IXdrBuffer} from '../types/IXdrBuffer';
 
 export class XdrBuffer implements IXdrBuffer {
 	private pointer: number;
 	private buffer: Buffer;
 
-	constructor(buffer?: Buffer | number) {
+	public constructor(buffer?: Buffer | number) {
 		this.pointer = 0;
 		this.buffer = Buffer.isBuffer(buffer) ? buffer : Buffer.alloc(buffer || 0);
 	}
