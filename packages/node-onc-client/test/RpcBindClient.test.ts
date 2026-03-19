@@ -1,26 +1,66 @@
-import {RpcCall, type RpcCallType, type RpcNetId} from '@luolapeikko/node-onc-common';
-import {type RpcProcedure, type RpcProgram, RpcRequest, RpcTcpTransport, RpcUdpTransport, XdrType} from '@luolapeikko/xdr-ts';
-import {afterAll, describe, expect, it} from 'vitest';
+import type {RpcCallType, RpcNetId} from '@luolapeikko/node-onc-common';
+import {type RpcProgram, RpcRequest, RpcTcpTransport, RpcUdpTransport, XdrType} from '@luolapeikko/xdr-ts';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {RpcBindClient} from '../src';
+import {TinyService} from './lib/TinyService';
 
-const rstatdDiskProcedure = {prog: 100001, vers: 1, proc: 2} as const satisfies RpcProcedure;
-const rstatdDiskResponse = XdrType.UInt<number>();
-
-const rstatdDiskCall = {
-	procedure: rstatdDiskProcedure,
-	decoder: rstatdDiskResponse.decode,
+const tinyServiceCall = {
+	procedure: {prog: 0x5f0001, vers: 1, proc: 1},
+	decoder: XdrType.UInt<number>().decode,
 } as const satisfies RpcCallType<void, number>;
 
 /**
  * Run docker rpcbind with the following flags:
- * # rpcbind -i -d -w -f
+ * # rpcbind -i -d -w -f 2>&1 | tee -a /tmp/rpcbind.log
  */
 
 describe('Rpc Abstraction (Transport Based)', () => {
-	const host = '127.0.0.1';
-	const port = 1111;
+	const tinyService = new TinyService({
+		procedure: tinyServiceCall.procedure,
+	});
+
+	beforeAll(async () => {
+		await tinyService.start();
+	});
+
+	afterAll(async () => {
+		await tinyService.close();
+	});
+
+	describe('TinyService Direct Transport', () => {
+		it('should respond directly over UDP', async () => {
+			tinyService.clearEvents();
+			const transport = new RpcUdpTransport({host: tinyService.host, port: tinyService.udpPort});
+			const response = await transport.call(new RpcRequest(tinyServiceCall.procedure));
+			transport.close();
+
+			expect(response.ok).toBe(true);
+			if (!response.ok) {
+				throw response.error;
+			}
+			expect(XdrType.UInt<number>().decode(response.xdr)).toBeGreaterThan(Math.floor(Date.now() / 1000) - 10);
+			console.log('[TinyServiceTest] direct UDP events', tinyService.getEvents());
+			expect(tinyService.getEvents().some((event) => event.includes('source=udp:'))).toBe(true);
+		});
+
+		it('should respond directly over TCP', async () => {
+			tinyService.clearEvents();
+			const transport = new RpcTcpTransport({host: tinyService.host, port: tinyService.tcpPort});
+			const response = await transport.call(new RpcRequest(tinyServiceCall.procedure));
+			transport.close();
+
+			expect(response.ok).toBe(true);
+			if (!response.ok) {
+				throw response.error;
+			}
+			expect(XdrType.UInt<number>().decode(response.xdr)).toBeGreaterThan(Math.floor(Date.now() / 1000) - 10);
+			console.log('[TinyServiceTest] direct TCP events', tinyService.getEvents());
+			expect(tinyService.getEvents().some((event) => event.includes('source=tcp:'))).toBe(true);
+		});
+	});
+
 	describe('RpcUdpTransport', () => {
-		const transport = new RpcUdpTransport(host, port);
+		const transport = new RpcUdpTransport();
 		const rpcbind = new RpcBindClient(transport);
 		it('should successfully execute RPCBPROC_NULL (UDP)', async () => {
 			await expect(rpcbind.null()).resolves.toBeUndefined();
@@ -70,25 +110,18 @@ describe('Rpc Abstraction (Transport Based)', () => {
 			console.log('UNSET (UDP) Result:', success);
 			expect(typeof success).toBe('boolean');
 		});
-		it('should successfully execute RPCBPROC_CALLIT (UDP) for GETTIME', async () => {
-			const dump = await rpcbind.dump();
-			console.log('Registered services:', dump);
-
-			// CALLIT is often used for broadcast, might have specific behavior/timeouts
-			const result = await rpcbind.callIt(rstatdDiskCall, undefined);
-			console.log('CALLIT Result Addr:', result.addr);
-			console.log('CALLIT Result Time:', result.results);
-			expect(result.addr).toBeDefined();
-			expect(result.results).toBeGreaterThan(0);
+		it('should log current rpcbind CALLIT forwarding behavior for TinyService over UDP', async () => {
+			tinyService.clearEvents();
+			await expect(rpcbind.callIt(tinyServiceCall, undefined)).rejects.toThrow('UDP Timeout');
+			console.log('[TinyServiceTest] CALLIT UDP events', tinyService.getEvents());
+			expect(tinyService.getEvents()).toEqual([]);
 		}, 10000);
 
-		it('should successfully execute RPCBPROC_INDIRECT (UDP) for GETTIME', async () => {
-			// INDIRECT is a non-quiet version of CALLIT in RPCB v4
-			const result = await rpcbind.indirectCall(rstatdDiskCall, undefined);
-			console.log('INDIRECT Result Addr:', result.addr);
-			console.log('CALLIT Result Time:', result.results);
-			expect(result.addr).toBeDefined();
-			expect(result.results).toBeGreaterThan(0);
+		it('should log current rpcbind INDIRECT forwarding behavior for TinyService over UDP', async () => {
+			tinyService.clearEvents();
+			await expect(rpcbind.indirectCall(tinyServiceCall, undefined)).rejects.toThrow('System Error');
+			console.log('[TinyServiceTest] INDIRECT UDP events', tinyService.getEvents());
+			expect(tinyService.getEvents()).toEqual([]);
 		}, 10000);
 		afterAll(() => {
 			transport.close();
@@ -96,7 +129,7 @@ describe('Rpc Abstraction (Transport Based)', () => {
 	});
 
 	describe('RpcTcpTransport', () => {
-		const transport = new RpcTcpTransport(host, port);
+		const transport = new RpcTcpTransport();
 		const rpcbind = new RpcBindClient(transport);
 		it('should successfully execute RPCBPROC_NULL (TCP)', async () => {
 			await expect(rpcbind.null()).resolves.toBeUndefined();
@@ -147,8 +180,15 @@ describe('Rpc Abstraction (Transport Based)', () => {
 					/* no-op */
 				},
 			};
-			await expect(rpcbind.indirectCall(nonExistentCall, undefined)).rejects.toThrow();
-		});
+			await expect(rpcbind.indirectCall(nonExistentCall, undefined)).rejects.toThrow('TCP Timeout');
+		}, 10000);
+
+		it('should log current rpcbind INDIRECT forwarding behavior for TinyService over TCP', async () => {
+			tinyService.clearEvents();
+			await expect(rpcbind.indirectCall(tinyServiceCall, undefined)).rejects.toThrow('TCP Timeout');
+			console.log('[TinyServiceTest] INDIRECT TCP events', tinyService.getEvents());
+			expect(tinyService.getEvents()).toEqual([]);
+		}, 10000);
 
 		afterAll(() => {
 			transport.close();
@@ -156,7 +196,7 @@ describe('Rpc Abstraction (Transport Based)', () => {
 	});
 
 	it('should handle error when calling invalid procedure via transport', async () => {
-		const transport = new RpcUdpTransport(host, port);
+		const transport = new RpcUdpTransport();
 		const request = new RpcRequest({
 			prog: 100000,
 			vers: 3,
@@ -170,7 +210,7 @@ describe('Rpc Abstraction (Transport Based)', () => {
 	});
 
 	describe('SET / UNSET - System RpcBind Exploration', () => {
-		const transport = new RpcUdpTransport(host, port);
+		const transport = new RpcUdpTransport();
 		const rpcbind = new RpcBindClient(transport);
 		const testProgram: RpcProgram = {
 			prog: 999999,

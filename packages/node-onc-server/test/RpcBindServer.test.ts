@@ -10,7 +10,7 @@ describe('RpcBindServer', () => {
 
 	describe('RpcTcpTransport', () => {
 		const tcpPort = 11112;
-		const transport = new RpcTcpTransport('127.0.0.1', tcpPort);
+		const transport = new RpcTcpTransport({port: tcpPort});
 		const client = new RpcBindClient(transport);
 		let server: RpcBindServer;
 		beforeAll(async () => {
@@ -84,7 +84,7 @@ describe('RpcBindServer', () => {
 
 	describe('RpcUdpTransport', () => {
 		const udpPort = 11113;
-		const transport = new RpcUdpTransport('127.0.0.1', udpPort);
+		const transport = new RpcUdpTransport({port: udpPort});
 		const client = new RpcBindClient(transport);
 		let server: RpcBindServer;
 		beforeAll(async () => {

@@ -6,17 +6,23 @@ import {RpcResponse} from '../rpc/RpcResponse';
 import {XdrBuffer} from '../xdrBuffer/XdrBuffer';
 import type {IRpcTransport} from './index';
 
+export type RpcUdpTransportOptions = {
+	host?: string;
+	port?: number;
+	socket?: dgram.Socket;
+};
+
 export class RpcUdpTransport implements IRpcTransport {
 	private readonly host: string;
 	private readonly port: number;
 	private socket: dgram.Socket | undefined;
-	private readonly externalSocket: boolean;
+	private readonly isExternalSocket: boolean;
 
-	public constructor(host: string, port: number, socket?: dgram.Socket) {
-		this.host = host;
-		this.port = port;
+	public constructor({host, port, socket}: RpcUdpTransportOptions = {}) {
+		this.host = host ?? '127.0.0.1';
+		this.port = port ?? 111;
 		this.socket = socket;
-		this.externalSocket = !!socket;
+		this.isExternalSocket = !!socket;
 	}
 
 	private getSocket(): dgram.Socket {
@@ -94,7 +100,7 @@ export class RpcUdpTransport implements IRpcTransport {
 	}
 
 	public close(): void {
-		if (this.socket && !this.externalSocket) {
+		if (this.socket && !this.isExternalSocket) {
 			try {
 				this.socket.close();
 			} catch (_e) {

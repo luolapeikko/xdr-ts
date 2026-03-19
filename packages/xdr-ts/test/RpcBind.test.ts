@@ -36,7 +36,7 @@ describe('RpcBind GETTIME', () => {
 		expect(payload.toString('hex')).toBe('123456780000000000000002000186a0000000030000000600000000000000000000000000000000');
 	});
 
-	it('should send GETTIME call to rpcbind on localhost:1111 (UDP) and receive response', async () => {
+	it('should send GETTIME call to rpcbind on localhost:111 (UDP) and receive response', async () => {
 		const client = dgram.createSocket('udp4');
 
 		const buffer = rpcCallSchemaModel.encode(new XdrBuffer(1024), {
@@ -62,7 +62,7 @@ describe('RpcBind GETTIME', () => {
 				console.error('UDP Error:', err);
 				reject(err);
 			});
-			client.send(payload, 1111, '127.0.0.1', (err) => {
+			client.send(payload, 111, '127.0.0.1', (err) => {
 				if (err) {
 					console.error('UDP Send Error:', err);
 					reject(err);
@@ -122,12 +122,12 @@ describe('RpcBind GETTIME', () => {
 
 		const tryConnect = (host: string) =>
 			new Promise<Buffer>((resolve, reject) => {
-				console.log(`Trying TCP connection to ${host}:1111...`);
-				const socket = net.createConnection({port: 1111, host: host});
+				console.log(`Trying TCP connection to ${host}:111...`);
+				const socket = net.createConnection({port: 111, host: host});
 				let received = Buffer.alloc(0);
 
 				socket.on('connect', () => {
-					console.log(`Connected to ${host}:1111`);
+					console.log(`Connected to ${host}:111`);
 					socket.write(fragmentHeader);
 					socket.write(payload);
 				});

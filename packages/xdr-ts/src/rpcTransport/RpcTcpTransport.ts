@@ -6,17 +6,23 @@ import {RpcResponse} from '../rpc/RpcResponse';
 import {XdrBuffer} from '../xdrBuffer/XdrBuffer';
 import type {IRpcTransport} from './index';
 
+export type RpcTcpTransportOptions = {
+	host?: string;
+	port?: number;
+	socket?: net.Socket;
+};
+
 export class RpcTcpTransport implements IRpcTransport {
 	private readonly host: string;
 	private readonly port: number;
 	private socket: net.Socket | undefined;
-	private readonly externalSocket: boolean;
+	private readonly isExternalSocket: boolean;
 
-	public constructor(host: string, port: number, socket?: net.Socket) {
-		this.host = host;
-		this.port = port;
+	public constructor({host, port, socket}: RpcTcpTransportOptions = {}) {
+		this.host = host ?? '127.0.0.1';
+		this.port = port ?? 111;
 		this.socket = socket;
-		this.externalSocket = !!socket;
+		this.isExternalSocket = !!socket;
 	}
 
 	public call(request: RpcRequest): Promise<RpcResponse> {
@@ -45,7 +51,7 @@ export class RpcTcpTransport implements IRpcTransport {
 
 			const timeout = setTimeout(() => {
 				cleanup();
-				if (!this.externalSocket) {
+				if (!this.isExternalSocket) {
 					socket?.destroy();
 				}
 				reject(new Error('TCP Timeout'));
@@ -64,7 +70,7 @@ export class RpcTcpTransport implements IRpcTransport {
 
 				clearTimeout(timeout);
 				cleanup();
-				if (!this.externalSocket) {
+				if (!this.isExternalSocket) {
 					socket?.destroy();
 				}
 				try {
@@ -77,7 +83,7 @@ export class RpcTcpTransport implements IRpcTransport {
 			const onError = (err: Error) => {
 				clearTimeout(timeout);
 				cleanup();
-				if (!this.externalSocket) {
+				if (!this.isExternalSocket) {
 					socket?.destroy();
 				}
 				reject(err);
@@ -106,7 +112,7 @@ export class RpcTcpTransport implements IRpcTransport {
 	}
 
 	public close(): void {
-		if (this.socket && !this.externalSocket) {
+		if (this.socket && !this.isExternalSocket) {
 			try {
 				this.socket.destroy();
 			} catch (_e) {
