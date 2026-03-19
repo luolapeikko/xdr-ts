@@ -24,3 +24,10 @@ export interface GetAddrListRequest {
 	prog: number;
 	vers: number;
 }
+
+export interface RemoteCallRequest<A = any> {
+	prog: number;
+	vers: number;
+	proc: number;
+	args: A;
+}

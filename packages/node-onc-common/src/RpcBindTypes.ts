@@ -51,3 +51,8 @@ export interface Netbuf {
 	maxlen: number;
 	buf: Buffer;
 }
+
+export interface RemoteCallResponse<R = any> {
+	addr: string;
+	results: R;
+}

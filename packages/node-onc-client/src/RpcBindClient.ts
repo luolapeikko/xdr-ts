@@ -2,6 +2,8 @@ import {
 	type GetAddrListRequest,
 	type GetAddrRequest,
 	type Netbuf,
+	type RemoteCallRequest,
+	type RemoteCallResponse,
 	type RpcbEntry,
 	type RpcbMapping,
 	type RpcbStat,
@@ -9,7 +11,7 @@ import {
 	type RpcCallType,
 	type RpcNetId,
 } from '@luolapeikko/node-onc-common';
-import {type AnyRpcTransport, type RpcProgram, RpcRequest} from '@luolapeikko/xdr-ts';
+import {type AnyRpcTransport, type RpcProgram, RpcRequest, XdrBuffer} from '@luolapeikko/xdr-ts';
 
 export class RpcBindClient {
 	private transport: AnyRpcTransport;
@@ -55,6 +57,39 @@ export class RpcBindClient {
 
 	public taddr2uaddr(netbuf: Netbuf): Promise<string> {
 		return this.call(RpcCall.taddr2uaddr, netbuf);
+	}
+
+	public callIt<A, R>(call: RpcCallType<A, R>, args: A): Promise<RemoteCallResponse<R>> {
+		return this.remoteCall(RpcCall.callIt, call, args);
+	}
+
+	public indirectCall<A, R>(call: RpcCallType<A, R>, args: A): Promise<RemoteCallResponse<R>> {
+		return this.remoteCall(RpcCall.indirect, call, args);
+	}
+
+	private async remoteCall<A, R>(
+		proxyCall: RpcCallType<RemoteCallRequest<Buffer>, RemoteCallResponse<Buffer>>,
+		targetCall: RpcCallType<A, R>,
+		args: A,
+	): Promise<RemoteCallResponse<R>> {
+		const argsXdr = new XdrBuffer();
+		targetCall.args?.(args)(argsXdr);
+		const encodedArgs = argsXdr.sliceUsed();
+
+		const proxyResponse = await this.call(proxyCall, {
+			prog: targetCall.procedure.prog,
+			vers: targetCall.procedure.vers,
+			proc: targetCall.procedure.proc,
+			args: encodedArgs,
+		});
+
+		const resultsXdr = new XdrBuffer(proxyResponse.results);
+		const decodedResults = targetCall.decoder?.(resultsXdr);
+
+		return {
+			addr: proxyResponse.addr,
+			results: decodedResults as R,
+		};
 	}
 
 	private async call<A = never, R = void>(call: RpcCallType<A, R>, args?: A): Promise<R> {

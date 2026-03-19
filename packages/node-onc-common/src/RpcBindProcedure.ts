@@ -1,6 +1,6 @@
 import type {IXdrBuffer, RpcProcedure} from '@luolapeikko/xdr-ts';
-import type {GetAddrListRequest, GetAddrRequest, SetProgramRequest, UnsetProgramRequest} from './RpcBindRequest';
-import type {Netbuf, RpcbEntry, RpcbSemantics, RpcNetId} from './RpcBindTypes';
+import type {GetAddrListRequest, GetAddrRequest, RemoteCallRequest, SetProgramRequest, UnsetProgramRequest} from './RpcBindRequest';
+import type {Netbuf, RemoteCallResponse, RpcbEntry, RpcbSemantics, RpcNetId} from './RpcBindTypes';
 import RpcType from './RpcType';
 
 export const RpcBindProcedure = {
@@ -13,6 +13,8 @@ export const RpcBindProcedure = {
 	dump: {prog: 100000, vers: 3, proc: 4},
 	uaddr2taddr: {prog: 100000, vers: 3, proc: 7},
 	taddr2uaddr: {prog: 100000, vers: 3, proc: 8},
+	callIt: {prog: 100000, vers: 3, proc: 5},
+	indirect: {prog: 100000, vers: 4, proc: 10},
 	null: {prog: 100000, vers: 3, proc: 0},
 } as const satisfies Record<string, RpcProcedure>;
 
@@ -110,5 +112,31 @@ export const RpcCall = {
 			RpcType.Netbuf().encode(xdr, args);
 		},
 		decoder: (xdr) => xdr.readString(),
+	},
+	callIt: {
+		procedure: RpcBindProcedure.callIt,
+		args: (args: RemoteCallRequest<Buffer>) => (xdr: IXdrBuffer) => {
+			xdr.writeUInt(args.prog);
+			xdr.writeUInt(args.vers);
+			xdr.writeUInt(args.proc);
+			xdr.writeOpaque(args.args);
+		},
+		decoder: (xdr): RemoteCallResponse<Buffer> => ({
+			addr: xdr.readString(),
+			results: xdr.readOpaque(),
+		}),
+	},
+	indirect: {
+		procedure: RpcBindProcedure.indirect,
+		args: (args: RemoteCallRequest<Buffer>) => (xdr: IXdrBuffer) => {
+			xdr.writeUInt(args.prog);
+			xdr.writeUInt(args.vers);
+			xdr.writeUInt(args.proc);
+			xdr.writeOpaque(args.args);
+		},
+		decoder: (xdr): RemoteCallResponse<Buffer> => ({
+			addr: xdr.readString(),
+			results: xdr.readOpaque(),
+		}),
 	},
 } as const satisfies Record<string, RpcCallType>;

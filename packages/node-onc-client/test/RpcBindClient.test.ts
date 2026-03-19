@@ -1,7 +1,15 @@
-import type {RpcNetId} from '@luolapeikko/node-onc-common';
-import {type RpcProgram, RpcRequest, RpcTcpTransport, RpcUdpTransport} from '@luolapeikko/xdr-ts';
+import {RpcCall, type RpcCallType, type RpcNetId} from '@luolapeikko/node-onc-common';
+import {type RpcProcedure, type RpcProgram, RpcRequest, RpcTcpTransport, RpcUdpTransport, XdrType} from '@luolapeikko/xdr-ts';
 import {afterAll, describe, expect, it} from 'vitest';
 import {RpcBindClient} from '../src';
+
+const rstatdDiskProcedure = {prog: 100001, vers: 1, proc: 2} as const satisfies RpcProcedure;
+const rstatdDiskResponse = XdrType.UInt<number>();
+
+const rstatdDiskCall = {
+	procedure: rstatdDiskProcedure,
+	decoder: rstatdDiskResponse.decode,
+} as const satisfies RpcCallType<void, number>;
 
 /**
  * Run docker rpcbind with the following flags:
@@ -62,6 +70,26 @@ describe('Rpc Abstraction (Transport Based)', () => {
 			console.log('UNSET (UDP) Result:', success);
 			expect(typeof success).toBe('boolean');
 		});
+		it('should successfully execute RPCBPROC_CALLIT (UDP) for GETTIME', async () => {
+			const dump = await rpcbind.dump();
+			console.log('Registered services:', dump);
+
+			// CALLIT is often used for broadcast, might have specific behavior/timeouts
+			const result = await rpcbind.callIt(rstatdDiskCall, undefined);
+			console.log('CALLIT Result Addr:', result.addr);
+			console.log('CALLIT Result Time:', result.results);
+			expect(result.addr).toBeDefined();
+			expect(result.results).toBeGreaterThan(0);
+		}, 10000);
+
+		it('should successfully execute RPCBPROC_INDIRECT (UDP) for GETTIME', async () => {
+			// INDIRECT is a non-quiet version of CALLIT in RPCB v4
+			const result = await rpcbind.indirectCall(rstatdDiskCall, undefined);
+			console.log('INDIRECT Result Addr:', result.addr);
+			console.log('CALLIT Result Time:', result.results);
+			expect(result.addr).toBeDefined();
+			expect(result.results).toBeGreaterThan(0);
+		}, 10000);
 		afterAll(() => {
 			transport.close();
 		});
@@ -111,6 +139,17 @@ describe('Rpc Abstraction (Transport Based)', () => {
 			console.log('First Entry MAddr:', entries[0].maddr);
 			console.log(entries);
 		});
+
+		it('should fail with PROC_UNAVAIL for INDIRECT to non-existent program', async () => {
+			const nonExistentCall: RpcCallType<void, void> = {
+				procedure: {prog: 999111, vers: 1, proc: 0},
+				decoder: () => {
+					/* no-op */
+				},
+			};
+			await expect(rpcbind.indirectCall(nonExistentCall, undefined)).rejects.toThrow();
+		});
+
 		afterAll(() => {
 			transport.close();
 		});
