@@ -2,7 +2,7 @@ import type {ValidXdrSchemaArray, XdrArray, XdrSchemaArray} from './XdrArray';
 import type {XdrConditional, XdrConditionalSchema} from './XdrConditional';
 import type {XdrObjectSchemaArray, XdrObjectSchemaArrayInput} from './XdrObjectSchemaArray';
 import type {InferArgumentObject, InferXdrSchema, ValidXdrSchema, XdrSchema} from './XdrSchema';
-import type {IXdrType} from './XdrType';
+import type {IXdrPrimitiveCodec} from './XdrType';
 
 export interface IXdrTypeClass<T> {
 	type: T;
@@ -13,13 +13,27 @@ export interface IXdrTypeClass<T> {
  */
 export type XdrObjectSchema<T = unknown> = {
 	name: string;
-	type: IXdrType<T> | XdrObjectSchema<T>[] | XdrConditional<any> | XdrConditionalSchema<any> | XdrArray<T> | ValidXdrSchemaArray<T> | ValidXdrSchema<T>;
+	type:
+		| IXdrPrimitiveCodec<T>
+		| XdrObjectSchema<T>[]
+		| XdrConditional<any>
+		| XdrConditionalSchema<any>
+		| XdrArray<T>
+		| ValidXdrSchemaArray<T>
+		| ValidXdrSchema<T>;
 	default?: T;
 };
 
 export type XdrInnerSchema<
-	S extends IXdrType | XdrConditional<any> | XdrConditionalSchema<any> | XdrArray<any> | XdrSchemaArray<any> | XdrObjectSchemaArrayInput | XdrSchema<any> =
-		| IXdrType
+	S extends
+		| IXdrPrimitiveCodec
+		| XdrConditional<any>
+		| XdrConditionalSchema<any>
+		| XdrArray<any>
+		| XdrSchemaArray<any>
+		| XdrObjectSchemaArrayInput
+		| XdrSchema<any> =
+		| IXdrPrimitiveCodec
 		| XdrConditional<any>
 		| XdrConditionalSchema<any>
 		| XdrArray<any>
@@ -32,10 +46,10 @@ export type XdrInnerSchema<
 	default?: InferArgument<S>;
 };
 
-export type InferXdrInnerSchema<T extends XdrInnerSchema> = InferArgument<T['type']>;
+export type InferXdrInnerSchemaType<T extends XdrInnerSchema> = InferArgument<T['type']>;
 
 export type NweInfer<T> =
-	T extends IXdrType<infer U>
+	T extends IXdrPrimitiveCodec<infer U>
 		? U
 		: T extends XdrConditional<infer U>
 			? U | undefined
@@ -53,7 +67,7 @@ export type NweInfer<T> =
 
 export type InferArgument<T> = T extends XdrObjectSchemaArray
 	? InferArgumentObject<T>
-	: T extends IXdrType<infer U>
+	: T extends IXdrPrimitiveCodec<infer U>
 		? U
 		: T extends XdrArray<infer U>
 			? U[]

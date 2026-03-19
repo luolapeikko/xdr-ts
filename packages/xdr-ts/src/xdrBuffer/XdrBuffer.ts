@@ -225,6 +225,16 @@ export class XdrBuffer implements IXdrBuffer {
 		return this;
 	}
 
+	public writeFixedArray<T>(length: number, value: T[], writer: (buffer: IXdrBuffer, value: T) => void): this {
+		if (value.length !== length) {
+			throw new Error(`Array length ${value.length} does not match expected length ${length}`);
+		}
+		for (const item of value) {
+			writer(this, item);
+		}
+		return this;
+	}
+
 	public writeOpaque(data: Buffer): this {
 		const length = data.length;
 		this.writeInt(length);

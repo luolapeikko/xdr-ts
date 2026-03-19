@@ -39,6 +39,7 @@ export interface IXdrBuffer {
 		flagWriter?: (buffer: IXdrBuffer, val: boolean) => void,
 	): this;
 	writeList<T>(items: T[], itemWriter: (buffer: IXdrBuffer, item: T) => void, flagWriter?: (buffer: IXdrBuffer, val: boolean) => void): this;
+	writeFixedArray<T>(length: number, value: T[], writer: (buffer: IXdrBuffer, value: T) => void): this;
 	size(): number;
 	rewind(): void;
 }

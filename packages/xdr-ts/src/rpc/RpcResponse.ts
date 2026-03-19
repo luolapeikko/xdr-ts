@@ -31,7 +31,7 @@ class RpcResponseImpl {
 
 	public constructor(buffer: Buffer) {
 		const xdr = new XdrBuffer(buffer);
-		this.reply = rpcReplySchemaModel.decode(new XdrBuffer(buffer));
+		this.reply = rpcReplySchemaModel.decode(xdr);
 		this.remaining = buffer.subarray(xdr.currentPointer);
 	}
 

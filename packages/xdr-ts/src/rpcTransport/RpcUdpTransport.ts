@@ -44,9 +44,11 @@ export class RpcUdpTransport implements IRpcTransport {
 			cred: request.credentials,
 			verf: {flavor: RpcAuthFlavor.AUTH_NONE, body: Buffer.alloc(0)},
 		});
+		console.log('rpc call header', xdr.currentPointer, 'bytes');
 		if (request.args) {
 			request.args(xdr);
 		}
+		console.log('rpc with body', xdr.currentPointer, 'bytes');
 
 		const payload = xdr.rawBuffer.subarray(0, xdr.currentPointer);
 

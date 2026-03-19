@@ -3,23 +3,23 @@ import {XdrArray, XdrSchemaArray} from '../src/types/XdrArray';
 import {XdrConditional, XdrConditionalSchema} from '../src/types/XdrConditional';
 import type {XdrObjectSchemaArrayInput} from '../src/types/XdrObjectSchemaArray';
 import {type InferXdrSchemaType, XdrSchema} from '../src/types/XdrSchema';
-import type {InferArgument, InferXdrInnerSchema, XdrInnerSchema} from '../src/types/XdrSchemaTypes';
-import {type IXdrType, XdrType} from '../src/types/XdrType';
+import type {InferArgument, InferXdrInnerSchemaType, XdrInnerSchema} from '../src/types/XdrSchemaTypes';
+import {type IXdrPrimitiveCodec, XdrType} from '../src/types/XdrType';
 
-function testInferArgument<T extends IXdrType<any> | XdrObjectSchemaArrayInput | XdrSchemaArray<any> | XdrArray<any> | XdrConditional<any>>(
+function testInferArgument<T extends IXdrPrimitiveCodec<any> | XdrObjectSchemaArrayInput | XdrSchemaArray<any> | XdrArray<any> | XdrConditional<any>>(
 	_schema: T,
 ): InferArgument<T> {
 	// nothing
 	return undefined as InferArgument<T>;
 }
-function testInferXdrSchema<T extends IXdrType | XdrObjectSchemaArrayInput>(_schema: T): InferXdrSchemaType<T> {
+function testInferXdrSchema<T extends IXdrPrimitiveCodec | XdrObjectSchemaArrayInput>(_schema: T): InferXdrSchemaType<T> {
 	// nothing
 	return undefined as InferXdrSchemaType<T>;
 }
 
-function testInferXdrInnerSchema<T extends XdrInnerSchema>(_schema: T): InferXdrInnerSchema<T> {
+function testInferXdrInnerSchema<T extends XdrInnerSchema>(_schema: T): InferXdrInnerSchemaType<T> {
 	// nothing
-	return undefined as InferXdrInnerSchema<T>;
+	return undefined as InferXdrInnerSchemaType<T>;
 }
 
 const conditional = new XdrConditional(XdrType.String(), () => true);

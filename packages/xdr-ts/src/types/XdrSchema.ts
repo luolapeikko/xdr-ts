@@ -7,11 +7,13 @@ import {
 	type XdrObjectSchemaArrayInput,
 } from './XdrObjectSchemaArray';
 import type {InferArgument, IXdrTypeClass} from './XdrSchemaTypes';
-import type {IXdrType} from './XdrType';
+import type {IXdrPrimitiveCodec} from './XdrType';
 
-export type ValidXdrSchema<T> = T extends XdrObjectSchemaArray ? T : T extends IXdrType ? T : never;
+export type ValidXdrSchema<T> = T extends XdrObjectSchemaArray ? T : T extends IXdrPrimitiveCodec ? T : never;
 
-export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrType = XdrObjectSchemaArrayInput | IXdrType> implements IXdrTypeClass<'schema'> {
+export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrPrimitiveCodec = XdrObjectSchemaArrayInput | IXdrPrimitiveCodec>
+	implements IXdrTypeClass<'schema'>
+{
 	public readonly type = 'schema';
 	public readonly schema: T;
 
@@ -27,7 +29,7 @@ export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrType = XdrObjec
 		return XdrSchema.handleDecode(this.schema, buffer);
 	}
 
-	private static handleEncode(schema: XdrObjectSchemaArrayInput | IXdrType<any>, args: any, buffer: IXdrBuffer): IXdrBuffer {
+	private static handleEncode(schema: XdrObjectSchemaArrayInput | IXdrPrimitiveCodec<any>, args: any, buffer: IXdrBuffer): IXdrBuffer {
 		// this is object schema array
 		if (isXdrObjectSchemaArrayInput(schema)) {
 			return encodeXdrObjectSchemaArray(buffer, schema, args);
@@ -43,7 +45,7 @@ export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrType = XdrObjec
 		return buffer;
 	}
 
-	private static handleDecode(schema: XdrObjectSchemaArrayInput | IXdrType<any>, buffer: IXdrBuffer): any {
+	private static handleDecode(schema: XdrObjectSchemaArrayInput | IXdrPrimitiveCodec<any>, buffer: IXdrBuffer): any {
 		// this is object schema array
 		if (isXdrObjectSchemaArrayInput(schema)) {
 			return decodeXdrObjectSchemaArray(buffer, schema);
@@ -82,6 +84,6 @@ export type XdrInnerSchemaRequired<T extends XdrObjectSchemaArrayInput> = {
 
 export type InferXdrInnerSchema<T extends XdrObjectSchemaArrayInput> = XdrInnerSchemaOptional<T> & XdrInnerSchemaRequired<T> & Record<string, unknown>;
 
-export type InferXdrSchemaType<T> = T extends IXdrType<infer U> ? U : T extends XdrObjectSchemaArray ? InferArgumentObject<T> : never;
+export type InferXdrSchemaType<T> = T extends IXdrPrimitiveCodec<infer U> ? U : T extends XdrObjectSchemaArray ? InferArgumentObject<T> : never;
 
 export type InferXdrSchema<T> = T extends XdrSchema<infer U> ? InferXdrSchemaType<U> : never;

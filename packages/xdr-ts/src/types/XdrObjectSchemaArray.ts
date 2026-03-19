@@ -26,7 +26,6 @@ export function encodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(
 	schema: T,
 	valueObject: InferXdrInnerSchema<T>,
 ): IXdrBuffer {
-	console.log(schema);
 	for (const entry of schema) {
 		const value = valueObject[entry.name] ?? entry.default;
 		// start next level of recursion if this is nested schema array

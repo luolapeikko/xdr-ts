@@ -1,6 +1,6 @@
-import {XdrConditional} from '../types/XdrConditional';
+import {XdrConditional, XdrConditionalSchema} from '../types/XdrConditional';
 import {XdrSchema} from '../types/XdrSchema';
-import type {InferArgument, XdrObjectSchema} from '../types/XdrSchemaTypes';
+import type {InferArgument, XdrInnerSchema} from '../types/XdrSchemaTypes';
 import {XdrType} from '../types/XdrType';
 import {rpcAuthSchema} from './RpcAuth';
 
@@ -36,15 +36,18 @@ export const rpcReplySchema = [
 		type: XdrType.UInt<RpcReplyStat>(),
 	},
 	{
+		// Per RFC 5531: verf (opaque_auth) is only present in the MSG_ACCEPTED branch.
+		// MSG_DENIED replies skip directly to the rejected_reply body, with no verf.
 		name: 'verf',
-		type: rpcAuthSchema,
+		type: new XdrConditionalSchema(rpcAuthSchema, (data) => data.replyStat === RpcReplyStat.MSG_ACCEPTED),
+		default: undefined,
 	},
 	{
 		name: 'acceptStat',
-		type: new XdrConditional((data) => data.replyStat === RpcReplyStat.MSG_ACCEPTED, XdrType.UInt<RpcAcceptStat>()),
+		type: new XdrConditional(XdrType.UInt<RpcAcceptStat>(), (data) => data.replyStat === RpcReplyStat.MSG_ACCEPTED),
 		default: undefined,
 	},
-] as const satisfies XdrObjectSchema[];
+] as const satisfies XdrInnerSchema[];
 
 export type RpcReplyType = InferArgument<typeof rpcReplySchema>;
 

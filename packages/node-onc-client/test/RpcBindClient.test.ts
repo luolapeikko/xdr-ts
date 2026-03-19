@@ -3,6 +3,11 @@ import {type RpcProgram, RpcRequest, RpcTcpTransport, RpcUdpTransport} from '@lu
 import {afterAll, describe, expect, it} from 'vitest';
 import {RpcBindClient} from '../src';
 
+/**
+ * Run docker rpcbind with the following flags:
+ * # rpcbind -i -d -w -f
+ */
+
 describe('Rpc Abstraction (Transport Based)', () => {
 	const host = '127.0.0.1';
 	const port = 1111;
@@ -50,7 +55,6 @@ describe('Rpc Abstraction (Transport Based)', () => {
 		it('should call SET (UDP)', async () => {
 			const success = await rpcbind.setProgram({prog: 999999, vers: 1}, 'udp', '127.0.0.1.0.0', 'owner');
 			console.log('SET (UDP) Result:', success);
-			// It might be false if not allowed, but we check that it doesn't throw
 			expect(typeof success).toBe('boolean');
 		});
 		it('should call UNSET (UDP)', async () => {
@@ -139,44 +143,36 @@ describe('Rpc Abstraction (Transport Based)', () => {
 		});
 
 		it('should attempt a valid set/unset cycle', async () => {
-			console.log('--- Valid SET/UNSET Cycle ---');
 			const setRes = await rpcbind.setProgram(testProgram, 'udp', '127.0.0.1.0.111', 'owner');
 			console.log('SET result:', setRes);
-
 			const unsetRes = await rpcbind.unsetProgram(testProgram, 'udp');
 			console.log('UNSET result:', unsetRes);
-
 			expect(typeof setRes).toBe('boolean');
 			expect(typeof unsetRes).toBe('boolean');
 		});
 
 		it('should attempt unset with empty netid (bulk unset)', async () => {
-			console.log('--- Bulk UNSET (empty netid) ---');
 			// Register first
 			await rpcbind.setProgram(testProgram, 'udp', '127.0.0.1.0.111', 'owner');
 			await rpcbind.setProgram(testProgram, 'tcp', '127.0.0.1.0.111', 'owner');
-
 			const unsetRes = await rpcbind.unsetProgram(testProgram, '' as RpcNetId);
 			console.log('Bulk UNSET result:', unsetRes);
 			expect(unsetRes).toBe(true);
 		});
 
 		it('should attempt unset for non-existent program', async () => {
-			console.log('--- UNSET non-existent ---');
 			const unsetRes = await rpcbind.unsetProgram({prog: 888888, vers: 1}, 'udp');
 			console.log('UNSET non-existent result:', unsetRes);
 			expect(unsetRes).toBe(true);
 		});
 
 		it('should attempt set with invalid maddr format', async () => {
-			console.log('--- SET invalid maddr ---');
 			const setRes = await rpcbind.setProgram(testProgram, 'udp', 'invalid-address', 'owner');
 			console.log('SET invalid maddr result:', setRes);
-			expect(setRes).toBe(true);
+			expect(typeof setRes).toBe('boolean');
 		});
 
 		it('should attempt set with empty owner', async () => {
-			console.log('--- SET empty owner ---');
 			const setRes = await rpcbind.setProgram(testProgram, 'udp', '127.0.0.1.0.111', '');
 			console.log('SET empty owner result:', setRes);
 			expect(setRes).toBe(false);

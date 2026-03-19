@@ -1,7 +1,7 @@
 import type {IXdrBuffer} from './IXdrBuffer';
 import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, type XdrObjectSchemaArray, type XdrObjectSchemaArrayInput} from './XdrObjectSchemaArray';
 import type {InferArgument, IXdrTypeClass} from './XdrSchemaTypes';
-import type {IXdrType} from './XdrType';
+import type {IXdrPrimitiveCodec} from './XdrType';
 
 type ResolveSize<T> = number | ((data: T) => boolean);
 
@@ -47,10 +47,10 @@ export class XdrSchemaArray<S extends XdrObjectSchemaArrayInput = XdrObjectSchem
 
 export class XdrArray<T = unknown> implements IXdrTypeClass<'array'> {
 	public readonly type = 'array';
-	private readonly schema: IXdrType<T>;
+	private readonly schema: IXdrPrimitiveCodec<T>;
 	private readonly sizeOrCallback: ResolveSize<T>;
 
-	public constructor(schema: IXdrType<T>, sizeOrCallback: ResolveSize<T>) {
+	public constructor(schema: IXdrPrimitiveCodec<T>, sizeOrCallback: ResolveSize<T>) {
 		this.schema = schema;
 		this.sizeOrCallback = sizeOrCallback;
 	}

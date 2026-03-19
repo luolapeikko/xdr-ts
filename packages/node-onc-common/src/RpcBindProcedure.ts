@@ -1,6 +1,7 @@
 import type {IXdrBuffer, RpcProcedure} from '@luolapeikko/xdr-ts';
-import {RpcDecode} from './rpcDecode';
-import type {SetProgramRequest, UnsetProgramRequest} from './RpcBindRequest';
+import type {GetAddrListRequest, GetAddrRequest, SetProgramRequest, UnsetProgramRequest} from './RpcBindRequest';
+import type {Netbuf, RpcbEntry, RpcbSemantics, RpcNetId} from './RpcBindTypes';
+import RpcType from './RpcType';
 
 export const RpcBindProcedure = {
 	getTime: {prog: 100000, vers: 3, proc: 6},
@@ -18,14 +19,14 @@ export const RpcBindProcedure = {
 export type RpcCallType<A = never, R = void> = {
 	procedure: RpcProcedure;
 	args?: (args: A) => (xdr: IXdrBuffer) => void;
-	response?: (xdr: IXdrBuffer) => R;
+	decoder?: (xdr: IXdrBuffer) => R;
 };
 
 export const RpcCall = {
-	getTime: {procedure: RpcBindProcedure.getTime, response: (xdr) => xdr.readUInt()},
+	getTime: {procedure: RpcBindProcedure.getTime, decoder: (xdr) => xdr.readUInt()},
 	getStats: {
 		procedure: RpcBindProcedure.getStats,
-		response: (xdr) => xdr.readFixedArray(3, (x) => RpcDecode.stat(x)),
+		decoder: RpcType.SetStats().decode,
 	},
 	null: {procedure: RpcBindProcedure.null},
 	setProgram: {
@@ -37,7 +38,7 @@ export const RpcCall = {
 			xdr.writeString(args.addr);
 			xdr.writeString(args.owner);
 		},
-		response: (xdr) => xdr.readBoolean(),
+		decoder: (xdr) => xdr.readBoolean(),
 	},
 	unsetProgram: {
 		procedure: RpcBindProcedure.unsetProgram,
@@ -48,6 +49,66 @@ export const RpcCall = {
 			xdr.writeString(''); // addr is ignored
 			xdr.writeString(''); // owner is ignored
 		},
-		response: (xdr) => xdr.readBoolean(),
+		decoder: (xdr) => xdr.readBoolean(),
+	},
+	getAddr: {
+		procedure: RpcBindProcedure.getAddr,
+		args: (args: GetAddrRequest) => (xdr: IXdrBuffer) => {
+			xdr.writeUInt(args.prog);
+			xdr.writeUInt(args.vers);
+			xdr.writeString(args.netid);
+			xdr.writeString(''); // r_addr (not used for query)
+			xdr.writeString(''); // r_owner (not used for query)
+		},
+		decoder: (xdr) => xdr.readString(),
+	},
+	getAddrList: {
+		procedure: RpcBindProcedure.getAddrList,
+		args: (args: GetAddrListRequest) => (xdr: IXdrBuffer) => {
+			xdr.writeUInt(args.prog);
+			xdr.writeUInt(args.vers);
+			xdr.writeString(''); // netid
+			xdr.writeString(''); // addr
+			xdr.writeString(''); // owner
+		},
+		decoder: (xdr) =>
+			xdr.readList(
+				(x) => ({
+					maddr: x.readString(),
+					netid: x.readString<RpcNetId>(),
+					semantics: x.readUInt<RpcbSemantics>(),
+					protofmly: x.readString<RpcbEntry['protofmly']>(),
+					proto: x.readString<RpcbEntry['proto']>(),
+				}),
+				(x) => x.readUInt(),
+			),
+	},
+	dump: {
+		procedure: RpcBindProcedure.dump,
+		decoder: (xdr) =>
+			xdr.readList(
+				(x) => ({
+					prog: x.readUInt(),
+					vers: x.readUInt(),
+					netid: x.readString<RpcNetId>(),
+					addr: x.readString(),
+					owner: x.readString(),
+				}),
+				(x) => x.readUInt(),
+			),
+	},
+	uaddr2taddr: {
+		procedure: RpcBindProcedure.uaddr2taddr,
+		args: (args: string) => (xdr: IXdrBuffer) => {
+			xdr.writeString(args);
+		},
+		decoder: (xdr) => RpcType.Netbuf().decode(xdr),
+	},
+	taddr2uaddr: {
+		procedure: RpcBindProcedure.taddr2uaddr,
+		args: (args: Netbuf) => (xdr: IXdrBuffer) => {
+			RpcType.Netbuf().encode(xdr, args);
+		},
+		decoder: (xdr) => xdr.readString(),
 	},
 } as const satisfies Record<string, RpcCallType>;
