@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "extends": "../../tsconfig.base.json",
+  "include": ["src", "test"],
+  "references": [{ "path": "../xdr-ts" }, { "path": "../node-onc-common" }]
+}

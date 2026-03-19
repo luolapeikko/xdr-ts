@@ -9,6 +9,14 @@ export class XdrBuffer implements IXdrBuffer {
 		this.buffer = Buffer.isBuffer(buffer) ? buffer : Buffer.alloc(buffer || 0);
 	}
 
+	public get currentPointer(): number {
+		return this.pointer;
+	}
+
+	public get rawBuffer(): Buffer {
+		return this.buffer;
+	}
+
 	public readByte(): number {
 		const length = this.ensureBytes(1, true);
 		const result = this.buffer[this.pointer];
@@ -16,46 +24,46 @@ export class XdrBuffer implements IXdrBuffer {
 		return result;
 	}
 
-	public readInt(): number {
+	public readInt<T extends number = number>(): T {
 		const length = this.ensureBytes(4, true);
 		const result = this.buffer.readInt32BE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
-	public readUInt(): number {
+	public readUInt<T extends number = number>(): T {
 		const length = this.ensureBytes(4, true);
 		const result = this.buffer.readUInt32BE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
-	public readShort(): number {
+	public readShort<T extends number = number>(): T {
 		const length = this.ensureBytes(2, true);
 		const result = this.buffer.readInt16BE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
-	public readUShort(): number {
+	public readUShort<T extends number = number>(): T {
 		const length = this.ensureBytes(2, true);
 		const result = this.buffer.readUInt16BE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
-	public readDouble(): bigint {
+	public readDouble<T extends bigint = bigint>(): T {
 		const length = this.ensureBytes(8, true);
 		const result = this.buffer.readBigInt64BE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
-	public readFloat(): number {
+	public readFloat<T extends number = number>(): T {
 		const length = this.ensureBytes(4, true);
 		const result = this.buffer.readFloatBE(this.pointer);
 		this.pointer += length;
-		return result;
+		return result as T;
 	}
 
 	public readFloatDouble(): number {
@@ -66,24 +74,50 @@ export class XdrBuffer implements IXdrBuffer {
 	}
 
 	public readIntArray(): number[] {
-		const output: number[] = [];
 		const count = this.readInt();
-		for (let i = 0; i < count; i++) {
-			output.push(this.readInt());
+		return this.readFixedArray(count, (x) => x.readInt());
+	}
+
+	public readFixedArray<T>(length: number, reader: (buffer: IXdrBuffer) => T): T[] {
+		const output: T[] = [];
+		for (let i = 0; i < length; i++) {
+			output.push(reader(this));
 		}
 		return output;
 	}
 
-	public readString(): string {
-		return this.readOpaque().toString();
+	public readString<T extends string = string>(): T {
+		return this.readOpaque().toString() as T;
+	}
+
+	public readBoolean(booleanReader?: (buffer: IXdrBuffer) => boolean | number): boolean {
+		const actualReader = booleanReader || ((x) => x.readUInt());
+		return !!actualReader(this);
+	}
+
+	public readOptional<T>(itemReader: (buffer: IXdrBuffer) => T, booleanReader?: (buffer: IXdrBuffer) => boolean | number): T | undefined {
+		if (this.readBoolean(booleanReader)) {
+			return itemReader(this);
+		}
+		return undefined;
+	}
+
+	public readList<T>(itemReader: (buffer: IXdrBuffer) => T, booleanReader?: (buffer: IXdrBuffer) => boolean | number): T[] {
+		const output: T[] = [];
+		while (this.readBoolean(booleanReader)) {
+			output.push(itemReader(this));
+		}
+		return output;
 	}
 
 	public readOpaque(): Buffer {
-		const length = this.ensureBytes(this.readInt(), true);
+		const length = this.readInt();
+		this.ensureBytes(length, true);
 		const result = this.buffer.subarray(this.pointer, this.pointer + length);
 		this.pointer += length;
 		// skip padding
-		this.pointer += (4 - (length % 4)) % 4;
+		const padding = (4 - (length % 4)) % 4;
+		this.pointer += padding;
 		return result;
 	}
 
@@ -163,12 +197,47 @@ export class XdrBuffer implements IXdrBuffer {
 		return this.writeOpaque(Buffer.from(value, 'utf8'));
 	}
 
+	public writeBoolean(value: boolean, flagWriter?: (buffer: IXdrBuffer, val: boolean) => void): this {
+		const actualWriter = flagWriter || ((x, v) => x.writeUInt(v ? 1 : 0));
+		actualWriter(this, value);
+		return this;
+	}
+
+	public writeOptional<T>(
+		value: T | undefined | null,
+		itemWriter: (buffer: IXdrBuffer, val: T) => void,
+		flagWriter?: (buffer: IXdrBuffer, val: boolean) => void,
+	): this {
+		const isPresent = value !== undefined && value !== null && (typeof value !== 'boolean' || value === true);
+		this.writeBoolean(isPresent, flagWriter);
+		if (isPresent) {
+			itemWriter(this, value as T);
+		}
+		return this;
+	}
+
+	public writeList<T>(items: T[], itemWriter: (buffer: IXdrBuffer, item: T) => void, flagWriter?: (buffer: IXdrBuffer, val: boolean) => void): this {
+		for (const item of items) {
+			this.writeBoolean(true, flagWriter);
+			itemWriter(this, item);
+		}
+		this.writeBoolean(false, flagWriter);
+		return this;
+	}
+
 	public writeOpaque(data: Buffer): this {
-		this.writeInt(this.buffer.length);
-		this.ensureBytes(data.length, false);
+		const length = data.length;
+		this.writeInt(length);
+		this.ensureBytes(length, false);
 		data.copy(this.buffer, this.pointer);
-		// move pointer and padding
-		this.pointer += data.length + 4 - (data.length % 4);
+		this.pointer += length;
+		// padding
+		const padding = (4 - (length % 4)) % 4;
+		if (padding > 0) {
+			this.ensureBytes(padding, false);
+			this.buffer.fill(0, this.pointer, this.pointer + padding);
+			this.pointer += padding;
+		}
 		return this;
 	}
 
@@ -181,11 +250,19 @@ export class XdrBuffer implements IXdrBuffer {
 		this.buffer.fill(0);
 	}
 
+	public size(): number {
+		return this.buffer.length;
+	}
+
 	private remainingBytes(): number {
 		return this.buffer.length - this.pointer;
 	}
 
 	public toString(): string {
 		return `XdrBuffer{pointer=${this.pointer}, size=${this.buffer.length}}`;
+	}
+
+	public sliceUsed(): Buffer {
+		return Buffer.from(this.buffer.subarray(0, this.pointer));
 	}
 }

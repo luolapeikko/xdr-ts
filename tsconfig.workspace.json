@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@luolapeikko/xdr-ts": ["packages/xdr-ts/src/index.ts"],
+      "@luolapeikko/node-onc-client": ["packages/node-onc-client/src/index.ts"],
+      "@luolapeikko/node-onc-server": ["packages/node-onc-server/src/index.ts"]
+    }
+  },
+  "extends": "./tsconfig.base.json"
+}

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {XdrBuffer, XdrInt} from '../src/';
+import {XdrBuffer, XdrType} from '../src/';
 
 describe('Test', function () {
 	describe('Test', function () {
@@ -17,14 +17,12 @@ describe('Test', function () {
 		it('should', function () {
 			const buffer = new XdrBuffer();
 			expect(buffer.toString()).to.equal('XdrBuffer{pointer=0, size=0}');
-			const value = new XdrInt(17);
-			value.encode(buffer);
+			XdrType.Int().encode(buffer, 17);
 			expect(buffer.toString()).to.equal('XdrBuffer{pointer=4, size=4}');
 			buffer.rewind();
 			expect(buffer.toString()).to.equal('XdrBuffer{pointer=0, size=4}');
-			const readValue = new XdrInt();
-			readValue.decode(buffer);
-			expect(readValue.value).to.equal(17);
+			const readValue = XdrType.Int().decode(buffer);
+			expect(readValue).to.equal(17);
 			expect(buffer.toString()).to.equal('XdrBuffer{pointer=4, size=4}');
 		});
 	});
