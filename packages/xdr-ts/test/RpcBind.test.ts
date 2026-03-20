@@ -46,8 +46,8 @@ describe('RpcBind GETTIME', () => {
 			prog: 100000,
 			vers: 3,
 			proc: 6,
-			cred: {},
-			verf: {},
+			cred: {flavor: RpcAuthFlavor.AUTH_NONE, body: Buffer.alloc(0)},
+			verf: {flavor: RpcAuthFlavor.AUTH_NONE, body: Buffer.alloc(0)},
 		});
 		const payload = buffer.sliceUsed();
 		console.log('UDP Payload Length:', payload.length);

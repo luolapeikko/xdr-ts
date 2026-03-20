@@ -1,21 +1,14 @@
 import type {IXdrBuffer} from './IXdrBuffer';
-import type {InferXdrInnerSchema} from './XdrSchema';
-import type {XdrInnerSchema, XdrObjectSchema} from './XdrSchemaTypes';
+import type {InferXdrInnerSchemaType, XdrInnerSchema} from './XdrSchemaTypes';
 
 export type XdrObjectSchemaArrayInput = [XdrInnerSchema, ...XdrInnerSchema[]] | readonly [XdrInnerSchema, ...XdrInnerSchema[]];
 
-/**
- * @deprecated use XdrObjectSchemaArrayInput instead
- */
-export type XdrObjectSchemaArray<T extends readonly unknown[] = readonly unknown[]> = T extends readonly unknown[]
-	? {
-			[K in keyof T]: XdrObjectSchema<T[K]>;
-		}
-	: never;
 
-export function isXdrObjectSchemaArray(value: unknown): value is XdrObjectSchemaArray {
-	return Array.isArray(value);
-}
+export type InferXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput = XdrObjectSchemaArrayInput> = {
+	[E in T[number] as E extends {default: any} ? never : E['type'] extends {type: 'conditional'} ? never : E['name']]: InferXdrInnerSchemaType<E>;
+} & {
+	[E in T[number] as E extends {default: any} ? E['name'] : E['type'] extends {type: 'conditional'} ? E['name'] : never]?: InferXdrInnerSchemaType<E>;
+} & Record<string, unknown>;
 
 export function isXdrObjectSchemaArrayInput(value: unknown): value is XdrObjectSchemaArrayInput {
 	return Array.isArray(value);
@@ -24,7 +17,7 @@ export function isXdrObjectSchemaArrayInput(value: unknown): value is XdrObjectS
 export function encodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(
 	buffer: IXdrBuffer,
 	schema: T,
-	valueObject: InferXdrInnerSchema<T>,
+	valueObject: InferXdrObjectSchemaArray<T>,
 ): IXdrBuffer {
 	for (const entry of schema) {
 		const value = valueObject[entry.name] ?? entry.default;
@@ -54,7 +47,7 @@ export function encodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(
 	return buffer;
 }
 
-export function decodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(buffer: IXdrBuffer, schema: T): InferXdrInnerSchema<T> {
+export function decodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(buffer: IXdrBuffer, schema: T): InferXdrObjectSchemaArray<T> {
 	const output: any = {};
 	for (const entry of schema) {
 		const key = entry.name;
@@ -86,5 +79,5 @@ export function decodeXdrObjectSchemaArray<T extends XdrObjectSchemaArrayInput>(
 				throw new Error(`missing schema type ${target satisfies never} decoder handler`);
 		}
 	}
-	return output as InferXdrInnerSchema<T>;
+	return output as InferXdrObjectSchemaArray<T>;
 }

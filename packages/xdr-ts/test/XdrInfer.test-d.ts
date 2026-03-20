@@ -2,19 +2,19 @@ import {assertType, describe, expectTypeOf, it} from 'vitest';
 import {XdrArray, XdrSchemaArray} from '../src/types/XdrArray';
 import {XdrConditional, XdrConditionalSchema} from '../src/types/XdrConditional';
 import type {XdrObjectSchemaArrayInput} from '../src/types/XdrObjectSchemaArray';
-import {type InferXdrSchemaType, XdrSchema} from '../src/types/XdrSchema';
+import {type InferXdrSchemaInputType, XdrSchema} from '../src/types/XdrSchema';
 import type {InferArgument, InferXdrInnerSchemaType, XdrInnerSchema} from '../src/types/XdrSchemaTypes';
 import {type IXdrPrimitiveCodec, XdrType} from '../src/types/XdrType';
 
-function testInferArgument<T extends IXdrPrimitiveCodec<any> | XdrObjectSchemaArrayInput | XdrSchemaArray<any> | XdrArray<any> | XdrConditional<any>>(
-	_schema: T,
-): InferArgument<T> {
+function testInferArgument<
+	T extends IXdrPrimitiveCodec<any> | XdrObjectSchemaArrayInput | XdrSchemaArray<any> | XdrArray<any> | XdrConditional<any> | XdrSchema<any>,
+>(_schema: T): InferArgument<T> {
 	// nothing
 	return undefined as InferArgument<T>;
 }
-function testInferXdrSchema<T extends IXdrPrimitiveCodec | XdrObjectSchemaArrayInput>(_schema: T): InferXdrSchemaType<T> {
+function testInferXdrSchema<T extends IXdrPrimitiveCodec | XdrObjectSchemaArrayInput>(_schema: T): InferXdrSchemaInputType<T> {
 	// nothing
-	return undefined as InferXdrSchemaType<T>;
+	return undefined as InferXdrSchemaInputType<T>;
 }
 
 function testInferXdrInnerSchema<T extends XdrInnerSchema>(_schema: T): InferXdrInnerSchemaType<T> {
@@ -54,7 +54,7 @@ describe('XdrInfer testing', () => {
 			expectTypeOf(testInferXdrInnerSchema({name: 'test', type: conditional})).not.toEqualTypeOf<never>();
 		});
 		it('conditional schema', () => {
-			assertType<{test?: {test: string}}>(testInferXdrInnerSchema({name: 'test', type: conditionalSchema}));
+			assertType<{test: string} | undefined>(testInferXdrInnerSchema({name: 'test', type: conditionalSchema}));
 			expectTypeOf(testInferXdrInnerSchema({name: 'test', type: conditionalSchema})).not.toEqualTypeOf<never>();
 		});
 		it('primitive array', () => {

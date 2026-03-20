@@ -1,5 +1,5 @@
+import type { XdrObjectSchemaArrayInput } from '../types/XdrObjectSchemaArray';
 import { XdrSchema } from '../types/XdrSchema';
-import type {XdrObjectSchema} from '../types/XdrSchemaTypes';
 import {XdrType} from '../types/XdrType';
 import {rpcAuthSchema} from './RpcAuth';
 
@@ -24,6 +24,6 @@ export const rpcCallSchema = [
 		name: 'verf',
 		type: rpcAuthSchema,
 	},
-] as const satisfies XdrObjectSchema[];
+] as const satisfies XdrObjectSchemaArrayInput;
 
 export const rpcCallSchemaModel = new XdrSchema(rpcCallSchema);

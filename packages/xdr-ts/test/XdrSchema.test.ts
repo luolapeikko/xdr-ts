@@ -33,15 +33,15 @@ describe('XdrSchema', () => {
 		const buffer = schema.encode(new XdrBuffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
 		buffer.rewind();
 		expect(schema.decode(buffer)).toEqual({field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
-	});
+	}); 
 	it('should encode and decode a simple raw schema inside schema correctly', () => {
-		const subSchemaRaw = [
+		const rawSubSchema = [
 			{name: 'subField1', type: XdrType.Int()},
 			{name: 'subField2', type: XdrType.String()},
 		] as const satisfies XdrObjectSchemaArrayInput;
 		const rawSchema = [
 			{name: 'field1', type: XdrType.UInt()},
-			{name: 'field2', type: subSchemaRaw},
+			{name: 'field2', type: rawSubSchema},
 		] as const satisfies XdrObjectSchemaArrayInput;
 		const schema = new XdrSchema(rawSchema);
 		const buffer = schema.encode(new XdrBuffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});

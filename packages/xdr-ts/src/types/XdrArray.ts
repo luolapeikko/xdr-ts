@@ -1,13 +1,11 @@
 import type {IXdrBuffer} from './IXdrBuffer';
-import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, type XdrObjectSchemaArray, type XdrObjectSchemaArrayInput} from './XdrObjectSchemaArray';
-import type {InferArgument, IXdrTypeClass} from './XdrSchemaTypes';
-import type {IXdrPrimitiveCodec} from './XdrType';
+import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, type XdrObjectSchemaArrayInput} from './XdrObjectSchemaArray';
+import type {InferArgument} from './XdrSchemaTypes';
+import type {IXdrPrimitiveCodec, IXdrTypeClass} from './XdrType';
 
 type ResolveSize<T> = number | ((data: T) => boolean);
 
-export type ValidXdrSchemaArray<T> = T extends XdrObjectSchemaArray ? T : never;
-
-export class XdrSchemaArray<S extends XdrObjectSchemaArrayInput = XdrObjectSchemaArrayInput> implements IXdrTypeClass<'array'> {
+export class XdrSchemaArray<S extends XdrObjectSchemaArrayInput = XdrObjectSchemaArrayInput> implements IXdrTypeClass<'array', InferArgument<S>[]> {
 	public readonly type = 'array';
 	private readonly schema: S;
 	private readonly sizeOrCallback: ResolveSize<InferArgument<S>>;
@@ -45,7 +43,7 @@ export class XdrSchemaArray<S extends XdrObjectSchemaArrayInput = XdrObjectSchem
 	}
 }
 
-export class XdrArray<T = unknown> implements IXdrTypeClass<'array'> {
+export class XdrArray<T = unknown> implements IXdrTypeClass<'array', T[]> {
 	public readonly type = 'array';
 	private readonly schema: IXdrPrimitiveCodec<T>;
 	private readonly sizeOrCallback: ResolveSize<T>;

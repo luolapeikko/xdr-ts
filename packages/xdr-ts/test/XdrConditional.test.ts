@@ -1,6 +1,12 @@
 import {describe, expect, it} from 'vitest';
+import type {InferXdrSchema} from '../src';
 import {XdrConditional} from '../src/types/XdrConditional';
-import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, type XdrObjectSchemaArrayInput} from '../src/types/XdrObjectSchemaArray';
+import {
+	decodeXdrObjectSchemaArray,
+	encodeXdrObjectSchemaArray,
+	type InferXdrObjectSchemaArray,
+	type XdrObjectSchemaArrayInput,
+} from '../src/types/XdrObjectSchemaArray';
 import {XdrType} from '../src/types/XdrType';
 import {XdrBuffer} from '../src/xdrBuffer/XdrBuffer';
 

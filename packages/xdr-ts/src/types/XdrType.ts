@@ -1,12 +1,16 @@
 import type {IXdrBuffer} from './IXdrBuffer';
 
-export interface IXdrCodec<T = unknown> {
-	encode(xdr: IXdrBuffer, value: T): void;
-	decode(xdr: IXdrBuffer): T;
+export interface IXdrCodec<O = unknown, I extends O = O> {
+	encode(xdr: IXdrBuffer, value: I): void;
+	decode(xdr: IXdrBuffer): O;
 }
 
 export interface IXdrPrimitiveCodec<T = unknown> extends IXdrCodec<T> {
 	type: 'primitive';
+}
+
+export interface IXdrTypeClass<K extends string, O, I extends O = O> extends IXdrCodec<O, I> {
+	type: K;
 }
 
 export type InferXdrCodec<T extends IXdrCodec> = T extends IXdrCodec<infer U> ? U : never;

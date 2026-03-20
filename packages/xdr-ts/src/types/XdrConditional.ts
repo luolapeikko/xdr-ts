@@ -1,14 +1,15 @@
 import type {IXdrBuffer} from './IXdrBuffer';
 import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, type XdrObjectSchemaArrayInput} from './XdrObjectSchemaArray';
-import type {InferArgument, IXdrTypeClass} from './XdrSchemaTypes';
+import type {InferArgument} from './XdrSchemaTypes';
 import type {IXdrPrimitiveCodec} from './XdrType';
 
 /**
  * A conditional type is a type that is only encoded or decoded if a certain condition is met.
  */
-export class XdrConditionalSchema<S extends XdrObjectSchemaArrayInput = XdrObjectSchemaArrayInput, O extends Record<string, unknown> = Record<string, unknown>>
-	implements IXdrTypeClass<'conditional'>
-{
+export class XdrConditionalSchema<
+	S extends XdrObjectSchemaArrayInput = XdrObjectSchemaArrayInput,
+	O extends Record<string, unknown> = Record<string, unknown>,
+> {
 	public readonly type = 'conditional';
 	private readonly condition: (data: O) => boolean;
 
@@ -37,7 +38,7 @@ export class XdrConditionalSchema<S extends XdrObjectSchemaArrayInput = XdrObjec
 	}
 }
 
-export class XdrConditional<T = unknown, O extends Record<string, unknown> = Record<string, unknown>> implements IXdrTypeClass<'conditional'> {
+export class XdrConditional<T = unknown, O extends Record<string, unknown> = Record<string, unknown>> {
 	public readonly type = 'conditional';
 	private readonly condition: (data: O) => boolean;
 

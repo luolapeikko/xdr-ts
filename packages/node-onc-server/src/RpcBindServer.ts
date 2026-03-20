@@ -41,6 +41,8 @@ const procedures: Record<keyof typeof RpcBindProcedure, string> = {
 	dump: normalizeRpcProcedure(RpcBindProcedure.dump),
 	taddr2uaddr: normalizeRpcProcedure(RpcBindProcedure.taddr2uaddr),
 	uaddr2taddr: normalizeRpcProcedure(RpcBindProcedure.uaddr2taddr),
+	callIt: normalizeRpcProcedure(RpcBindProcedure.callIt),
+	indirect: normalizeRpcProcedure(RpcBindProcedure.indirect),
 } as const;
 
 export type RpcBindServerOptions = {

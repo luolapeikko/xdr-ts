@@ -2,17 +2,17 @@ import type {IXdrBuffer} from './IXdrBuffer';
 import {
 	decodeXdrObjectSchemaArray,
 	encodeXdrObjectSchemaArray,
+	type InferXdrObjectSchemaArray,
 	isXdrObjectSchemaArrayInput,
-	type XdrObjectSchemaArray,
 	type XdrObjectSchemaArrayInput,
 } from './XdrObjectSchemaArray';
-import type {InferArgument, IXdrTypeClass} from './XdrSchemaTypes';
-import type {IXdrPrimitiveCodec} from './XdrType';
+import type {InferArgument} from './XdrSchemaTypes';
+import type {IXdrPrimitiveCodec, IXdrTypeClass} from './XdrType';
 
-export type ValidXdrSchema<T> = T extends XdrObjectSchemaArray ? T : T extends IXdrPrimitiveCodec ? T : never;
+export type InferXdrSchemaInputType<T> = T extends IXdrPrimitiveCodec<infer U> ? U : T extends XdrObjectSchemaArrayInput ? InferXdrObjectSchemaArray<T> : never;
 
 export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrPrimitiveCodec = XdrObjectSchemaArrayInput | IXdrPrimitiveCodec>
-	implements IXdrTypeClass<'schema'>
+	implements IXdrTypeClass<'schema', InferArgument<T>>
 {
 	public readonly type = 'schema';
 	public readonly schema: T;
@@ -37,7 +37,7 @@ export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrPrimitiveCodec 
 		// this is root primitive type
 		switch (schema.type) {
 			case 'primitive':
-				schema.encode(buffer, args as any);
+				schema.encode(buffer, args);
 				break;
 			default:
 				throw new Error(`missing schema type ${schema.type satisfies never} encoder handler`);
@@ -64,26 +64,4 @@ export class XdrSchema<T extends XdrObjectSchemaArrayInput | IXdrPrimitiveCodec 
 	}
 }
 
-export type InferredOptional<T extends XdrObjectSchemaArray> = {
-	[E in T[number] as E extends {default: any} ? E['name'] : never]?: InferArgument<E['type']>;
-};
-
-export type InferredRequired<T extends XdrObjectSchemaArray> = {
-	[E in T[number] as E extends {default: any} ? never : E['name']]: InferArgument<E['type']>;
-};
-
-export type InferArgumentObject<T extends XdrObjectSchemaArray> = InferredOptional<T> & InferredRequired<T>;
-
-export type XdrInnerSchemaOptional<T extends XdrObjectSchemaArrayInput> = {
-	[E in T[number] as E extends {default: any} ? E['name'] : never]?: InferArgument<E['type']>;
-};
-
-export type XdrInnerSchemaRequired<T extends XdrObjectSchemaArrayInput> = {
-	[E in T[number] as E extends {default: any} ? never : E['name']]: InferArgument<E['type']>;
-};
-
-export type InferXdrInnerSchema<T extends XdrObjectSchemaArrayInput> = XdrInnerSchemaOptional<T> & XdrInnerSchemaRequired<T> & Record<string, unknown>;
-
-export type InferXdrSchemaType<T> = T extends IXdrPrimitiveCodec<infer U> ? U : T extends XdrObjectSchemaArray ? InferArgumentObject<T> : never;
-
-export type InferXdrSchema<T> = T extends XdrSchema<infer U> ? InferXdrSchemaType<U> : never;
+export type InferXdrSchema<T> = T extends XdrSchema<infer U> ? InferXdrSchemaInputType<U> : never;
