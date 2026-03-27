@@ -153,7 +153,9 @@
             "noNonNullAssertion": "off"
           },
           "suspicious": {
-            "noExplicitAny": "off"
+            "noExplicitAny": "off",
+            "noEmptyBlockStatements": "off",
+            "noApproximativeNumericConstant": "off"
           },
           "complexity": {
             "noForEach": "off",

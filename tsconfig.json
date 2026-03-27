@@ -1,4 +1,10 @@
 {
   "files": [],
-  "references": [{ "path": "./packages/xdr-ts" }, { "path": "./packages/node-onc-client" }, { "path": "./packages/node-onc-server" }]
+  "references": [
+    { "path": "./packages/onc-xdr" },
+    { "path": "./packages/onc-node" },
+    { "path": "./packages/onc-rpcbind-common" },
+    { "path": "./packages/onc-rpcbind-client" },
+    { "path": "./packages/onc-rpcbind-server" }
+  ]
 }

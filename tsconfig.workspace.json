@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
     "paths": {
-      "@luolapeikko/xdr-ts": ["packages/xdr-ts/src/index.ts"],
-      "@luolapeikko/node-onc-client": ["packages/node-onc-client/src/index.ts"],
-      "@luolapeikko/node-onc-server": ["packages/node-onc-server/src/index.ts"]
+      "@luolapeikko/onc-xdr": ["packages/onc-xdr/src/index.ts"],
+      "@luolapeikko/onc-node": ["packages/onc-node/src/index.ts"],
+      "@luolapeikko/onc-rpcbind-common": ["packages/onc-rpcbind-common/src/index.ts"],
+      "@luolapeikko/onc-rpcbind-client": ["packages/onc-rpcbind-client/src/index.ts"],
+      "@luolapeikko/onc-rpcbind-server": ["packages/onc-rpcbind-server/src/index.ts"]
     }
   },
   "extends": "./tsconfig.base.json"
