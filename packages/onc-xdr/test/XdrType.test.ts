@@ -1,12 +1,11 @@
-import {XdrBuffer} from '@luolapeikko/onc-node';
 import {beforeEach, describe, expect, it} from 'vitest';
-import {XdrType} from '../src/';
+import {XdrType, XdrUint8Buffer} from '../src/';
 
 describe('XdrType Primitive Codecs', () => {
-	let xdr: XdrBuffer;
+	let xdr: XdrUint8Buffer;
 
 	beforeEach(() => {
-		xdr = new XdrBuffer(1024);
+		xdr = new XdrUint8Buffer(1024);
 	});
 
 	describe('UInt Codec', () => {
@@ -233,7 +232,7 @@ describe('XdrType Primitive Codecs', () => {
 	describe('Opaque Codec (Binary Data)', () => {
 		it('should encode and decode binary buffer', () => {
 			const codec = XdrType.Opaque();
-			const data = Buffer.from([1, 2, 3, 4, 5]);
+			const data = new Uint8Array([1, 2, 3, 4, 5]);
 			codec.encode(xdr, data);
 			xdr.rewind();
 			expect(codec.decode(xdr)).toEqual(data);
@@ -241,7 +240,7 @@ describe('XdrType Primitive Codecs', () => {
 
 		it('should encode and decode empty buffer', () => {
 			const codec = XdrType.Opaque();
-			const data = Buffer.alloc(0);
+			const data = new Uint8Array(0);
 			codec.encode(xdr, data);
 			xdr.rewind();
 			expect(codec.decode(xdr)).toEqual(data);
@@ -249,7 +248,7 @@ describe('XdrType Primitive Codecs', () => {
 
 		it('should encode and decode buffer with padding', () => {
 			const codec = XdrType.Opaque();
-			const data = Buffer.from([1, 2, 3]); // 3 bytes needs 1 byte padding
+			const data = new Uint8Array([1, 2, 3]); // 3 bytes needs 1 byte padding
 			codec.encode(xdr, data);
 			xdr.rewind();
 			expect(codec.decode(xdr)).toEqual(data);
@@ -257,7 +256,7 @@ describe('XdrType Primitive Codecs', () => {
 
 		it('should encode and decode buffer with non-aligned length', () => {
 			const codec = XdrType.Opaque();
-			const data = Buffer.from([1, 2, 3, 4, 5, 6, 7]); // 7 bytes needs 1 byte padding
+			const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7]); // 7 bytes needs 1 byte padding
 			codec.encode(xdr, data);
 			xdr.rewind();
 			expect(codec.decode(xdr)).toEqual(data);
@@ -440,7 +439,7 @@ describe('XdrType Primitive Codecs', () => {
 
 		it('should handle large binary data', () => {
 			const opaqueCodec = XdrType.Opaque();
-			const largeBuffer = Buffer.alloc(10000);
+			const largeBuffer = new Uint8Array(10000);
 			for (let i = 0; i < largeBuffer.length; i++) {
 				largeBuffer[i] = (i % 256) as any;
 			}

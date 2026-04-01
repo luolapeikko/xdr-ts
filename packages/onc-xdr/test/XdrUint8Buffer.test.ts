@@ -16,7 +16,7 @@ describe('XdrBuffer', () => {
 		});
 
 		it('should create a buffer from existing Buffer', () => {
-			const buf = Buffer.from([0x00, 0x00, 0x00, 0x11]);
+			const buf = new Uint8Array([0x00, 0x00, 0x00, 0x11]);
 			const xdr = new XdrUint8Buffer(buf);
 			expect(xdr.size()).toBe(4);
 			expect(xdr.currentPointer).toBe(0);
@@ -349,7 +349,7 @@ describe('XdrBuffer', () => {
 		it('should write string with 4-byte padding by default', () => {
 			xdr.writeString('abc');
 			expect(xdr.currentPointer).toBe(8);
-			expect(Buffer.from(xdr.rawBuffer.subarray(0, 8))).toEqual(Buffer.from([0, 0, 0, 3, 97, 98, 99, 0]));
+			expect(new Uint8Array(xdr.rawBuffer.subarray(0, 8))).toEqual(new Uint8Array([0, 0, 0, 3, 97, 98, 99, 0]));
 			xdr.rewind();
 			expect(xdr.readString()).toBe('abc');
 		});
@@ -368,35 +368,35 @@ describe('XdrBuffer', () => {
 		});
 
 		it('should write and read opaque buffer', () => {
-			const data = Buffer.from([1, 2, 3, 4, 5]);
+			const data = new Uint8Array([1, 2, 3, 4, 5]);
 			xdr.writeOpaque(data);
 			xdr.rewind();
-			expect(Buffer.from(xdr.readOpaque())).toEqual(data);
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(data);
 		});
 
 		it('should write and read empty opaque buffer', () => {
-			const data = Buffer.alloc(0);
+			const data = new Uint8Array(0);
 			xdr.writeOpaque(data);
 			xdr.rewind();
-			expect(Buffer.from(xdr.readOpaque())).toEqual(data);
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(data);
 		});
 
 		it('should write and read opaque buffer with non-aligned length', () => {
-			const data = Buffer.from([1, 2, 3]); // 3 bytes, needs 1 byte padding
+			const data = new Uint8Array([1, 2, 3]); // 3 bytes, needs 1 byte padding
 			xdr.writeOpaque(data);
 			xdr.rewind();
-			expect(Buffer.from(xdr.readOpaque())).toEqual(data);
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(data);
 		});
 
 		it('should write and read opaque buffer with proper padding', () => {
-			const data = Buffer.from([1, 2, 3, 4, 5, 6, 7]); // 7 bytes, needs 1 byte padding
+			const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7]); // 7 bytes, needs 1 byte padding
 			xdr.writeOpaque(data);
 			xdr.rewind();
-			expect(Buffer.from(xdr.readOpaque())).toEqual(data);
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(data);
 		});
 
 		it('should support method chaining on write', () => {
-			const result = xdr.writeOpaque(Buffer.from([1, 2, 3]));
+			const result = xdr.writeOpaque(new Uint8Array([1, 2, 3]));
 			expect(result).toBe(xdr);
 		});
 	});
@@ -799,14 +799,14 @@ describe('XdrBuffer', () => {
 			xdr.writeString('hello');
 			xdr.writeBoolean(true);
 			xdr.writeShort(100);
-			xdr.writeOpaque(Buffer.from([1, 2, 3]));
+			xdr.writeOpaque(new Uint8Array([1, 2, 3]));
 
 			xdr.rewind();
 			expect(xdr.readInt()).toBe(42);
 			expect(xdr.readString()).toBe('hello');
 			expect(xdr.readBoolean()).toBe(true);
 			expect(xdr.readShort()).toBe(100);
-			expect(Buffer.from(xdr.readOpaque())).toEqual(Buffer.from([1, 2, 3]));
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(new Uint8Array([1, 2, 3]));
 		});
 
 		it('should handle nested structures', () => {
@@ -853,16 +853,16 @@ describe('XdrBuffer', () => {
 		it('should handle padding correctly with various opaque sizes', () => {
 			const xdr = new XdrUint8Buffer(1024);
 			// Test padding for 1, 2, 3 byte opaques
-			xdr.writeOpaque(Buffer.from([1]));
-			xdr.writeOpaque(Buffer.from([2, 3]));
-			xdr.writeOpaque(Buffer.from([4, 5, 6]));
-			xdr.writeOpaque(Buffer.from([7, 8, 9, 10]));
+			xdr.writeOpaque(new Uint8Array([1]));
+			xdr.writeOpaque(new Uint8Array([2, 3]));
+			xdr.writeOpaque(new Uint8Array([4, 5, 6]));
+			xdr.writeOpaque(new Uint8Array([7, 8, 9, 10]));
 
 			xdr.rewind();
-			expect(Buffer.from(xdr.readOpaque())).toEqual(Buffer.from([1]));
-			expect(Buffer.from(xdr.readOpaque())).toEqual(Buffer.from([2, 3]));
-			expect(Buffer.from(xdr.readOpaque())).toEqual(Buffer.from([4, 5, 6]));
-			expect(Buffer.from(xdr.readOpaque())).toEqual(Buffer.from([7, 8, 9, 10]));
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(new Uint8Array([1]));
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(new Uint8Array([2, 3]));
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(new Uint8Array([4, 5, 6]));
+			expect(new Uint8Array(xdr.readOpaque())).toEqual(new Uint8Array([7, 8, 9, 10]));
 		});
 	});
 });

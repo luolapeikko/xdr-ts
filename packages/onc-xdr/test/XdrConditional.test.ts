@@ -1,10 +1,9 @@
-import {XdrBuffer} from '@luolapeikko/onc-node';
 import {describe, expect, it} from 'vitest';
-import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, XdrConditional, type XdrObjectSchemaArrayInput, XdrType} from '../src/';
+import {decodeXdrObjectSchemaArray, encodeXdrObjectSchemaArray, XdrConditional, type XdrObjectSchemaArrayInput, XdrType, XdrUint8Buffer} from '../src/';
 
 describe('XdrConditional', () => {
 	it('should encode and decode when condition is met', () => {
-		const buffer = new XdrBuffer(10);
+		const buffer = new XdrUint8Buffer(10);
 		const schema = [
 			{name: 'flag', type: XdrType.UInt()},
 			{name: 'maybeValue', type: new XdrConditional(XdrType.UInt(), (data: any) => data.flag === 1)},
@@ -21,7 +20,7 @@ describe('XdrConditional', () => {
 	});
 
 	it('should NOT encode or decode when condition is not met', () => {
-		const buffer = new XdrBuffer(10);
+		const buffer = new XdrUint8Buffer(10);
 		const schema = [
 			{name: 'flag', type: XdrType.UInt()},
 			{name: 'maybeValue', type: new XdrConditional(XdrType.UInt(), (data: any) => data.flag === 1)},
@@ -38,7 +37,7 @@ describe('XdrConditional', () => {
 	});
 
 	it('should work with default values', () => {
-		const buffer = new XdrBuffer(10);
+		const buffer = new XdrUint8Buffer(10);
 		const schema = [
 			{name: 'flag', type: XdrType.UInt()},
 			{name: 'maybeValue', type: new XdrConditional(XdrType.UInt(), (data: any) => data.flag === 1), default: 99},

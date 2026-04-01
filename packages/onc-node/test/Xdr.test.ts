@@ -1,6 +1,6 @@
-import {XdrBuffer} from '@luolapeikko/onc-node';
+import {XdrType} from '@luolapeikko/onc-xdr';
 import {describe, expect, it} from 'vitest';
-import {XdrType} from '../src/';
+import {XdrBuffer} from '../src/';
 
 describe('Test', function () {
 	describe('Test', function () {

@@ -27,7 +27,6 @@
     "author": "mharj",
     "license": "ISC",
 	"devDependencies": {
-		"@luolapeikko/onc-node": "workspace:*",
 		"@types/node": "^25.4.0"
 	},
 	"peerDependencies": {

@@ -37,8 +37,7 @@
 		"@luolapeikko/onc-rpcbind-client": "workspace:*",
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
-		"@types/ws": "^8.18.1",
-		"ws":"^8.19.0"
+		"ws": "^8.20.0"
     },
 	"peerDependencies": {
 		"@avanio/logger-like": ">= 0.0.1",
@@ -46,9 +45,11 @@
 		"@luolapeikko/onc-node": "^0.0.1",
 		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
 		"@luolapeikko/onc-xdr": "^0.0.1",
-		"@types/ws": "^8.18.1"
-	},
-	"optionalDependencies": {
 		"ws": ">= 8.0.0"
+	},
+	"peerDependenciesMeta": {
+		"ws": {
+			"optional": true
+		}
 	}
 }

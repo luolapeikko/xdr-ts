@@ -1,11 +1,10 @@
-import {XdrBuffer} from '@luolapeikko/onc-node';
 import {describe, expect, it} from 'vitest';
-import {type XdrObjectSchemaArrayInput, XdrSchema, XdrType} from '../src';
+import {type XdrObjectSchemaArrayInput, XdrSchema, XdrType, XdrUint8Buffer} from '../src';
 
 describe('XdrSchema', () => {
 	it('should encode and decode a primitive correctly', () => {
 		const schema = new XdrSchema(XdrType.UInt());
-		const buffer = schema.encode(new XdrBuffer(4), 12345);
+		const buffer = schema.encode(new XdrUint8Buffer(4), 12345);
 		buffer.rewind();
 		expect(schema.decode(buffer)).toBe(12345);
 	});
@@ -15,7 +14,7 @@ describe('XdrSchema', () => {
 			{name: 'field2', type: XdrType.String()},
 		] as const satisfies XdrObjectSchemaArrayInput;
 		const schema = new XdrSchema(rawSchema);
-		const buffer = schema.encode(new XdrBuffer(1024), {field1: 12345, field2: 'hello'});
+		const buffer = schema.encode(new XdrUint8Buffer(1024), {field1: 12345, field2: 'hello'});
 		buffer.rewind();
 		expect(schema.decode(buffer)).toEqual({field1: 12345, field2: 'hello'});
 	});
@@ -29,7 +28,7 @@ describe('XdrSchema', () => {
 			{name: 'field2', type: subSchema},
 		] as const satisfies XdrObjectSchemaArrayInput;
 		const schema = new XdrSchema(rawSchema);
-		const buffer = schema.encode(new XdrBuffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
+		const buffer = schema.encode(new XdrUint8Buffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
 		buffer.rewind();
 		expect(schema.decode(buffer)).toEqual({field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
 	});
@@ -43,7 +42,7 @@ describe('XdrSchema', () => {
 			{name: 'field2', type: rawSubSchema},
 		] as const satisfies XdrObjectSchemaArrayInput;
 		const schema = new XdrSchema(rawSchema);
-		const buffer = schema.encode(new XdrBuffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
+		const buffer = schema.encode(new XdrUint8Buffer(1024), {field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
 		buffer.rewind();
 		expect(schema.decode(buffer)).toEqual({field1: 12345, field2: {subField1: -54321, subField2: 'world'}});
 	});
