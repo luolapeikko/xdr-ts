@@ -1,7 +1,12 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/packages/onc-node"
+      - "/packages/onc-rpcbind-server"
+      - "/packages/onc-rpcbind-client"
+      - "/packages/onc-rpcbind-common"
+      - "/packages/onc-xdr"
     schedule:
       interval: "weekly"
     allow:
