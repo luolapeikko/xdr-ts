@@ -216,8 +216,7 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 				res.setHeader('Access-Control-Allow-Origin', origin);
 				res.setHeader('Vary', 'Origin');
 				res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-				res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-				res.setHeader('Access-Control-Allow-Credentials', 'true');
+				res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 			}
 			if (origin && req.method === 'OPTIONS') {
 				res.writeHead(204);
