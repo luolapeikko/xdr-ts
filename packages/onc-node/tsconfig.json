@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "composite": true,
+    "lib": ["esnext"],
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "types": ["node"]
   },
   "extends": "../../tsconfig.base.json",
   "include": ["src", "test"],

@@ -238,15 +238,16 @@ export class XdrBuffer implements IXdrBuffer<Buffer> {
 		return this;
 	}
 
-	public writeOpaque(data: Buffer): this {
+	public writeOpaque(data: Uint8Array): this {
 		return this.writeWithPadding(data);
 	}
 
-	private writeWithPadding(data: Buffer): this {
+	private writeWithPadding(data: Uint8Array): this {
+		const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data.buffer, data.byteOffset, data.byteLength);
 		const length = data.length;
 		this.writeInt(length);
 		this.ensureBytes(length, false);
-		data.copy(this.buffer, this.pointer);
+		chunk.copy(this.buffer, this.pointer);
 		this.pointer += length;
 		const padding = (4 - (length % 4)) % 4;
 		if (padding > 0) {

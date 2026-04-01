@@ -1,4 +1,4 @@
-import {RpcNodeTcpTransport, RpcNodeUdpTransport} from '@luolapeikko/onc-node';
+import {RpcNodeIpcTransport, RpcNodeTcpTransport, RpcNodeUdpTransport} from '@luolapeikko/onc-node';
 import {RpcBindClient} from '@luolapeikko/onc-rpcbind-client';
 import {type RpcProcedure, RpcProcUnavailError, RpcRequest, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
@@ -179,6 +179,89 @@ describe('RpcBindServer', () => {
 			const server = new RpcBindServer(testPort + 5);
 			const closed = await server.close();
 			expect(closed).toBe(true);
+		});
+
+		it('should throw when local is enabled but socketPath is not set', async () => {
+			const server = new RpcBindServer(testPort + 6, {tcp: false, udp: false, local: true});
+			await expect(server.bind()).rejects.toThrow('socketPath must be set when local is enabled');
+		});
+	});
+
+	describe('RpcIpcTransport (Unix domain socket)', () => {
+		const socketPath = '/tmp/rpcbind-test.sock';
+		const transport = new RpcNodeIpcTransport({path: socketPath});
+		const client = new RpcBindClient(transport);
+		let server: RpcBindServer;
+
+		beforeAll(async () => {
+			server = new RpcBindServer(testPort + 10, {tcp: false, udp: false, local: true, socketPath});
+			await server.bind();
+		});
+
+		afterAll(async () => {
+			transport.close();
+			await server.close();
+		});
+
+		it('should successfully call RPCBPROC_NULL via local socket', async () => {
+			await expect(client.null()).resolves.toBeUndefined();
+		});
+
+		it('should get time via local socket', async () => {
+			const time = await client.getTime();
+			const now = Math.floor(Date.now() / 1000);
+			expect(time).toBeGreaterThan(now - 10);
+			expect(time).toBeLessThanOrEqual(now + 10);
+		});
+
+		it('should successfully dump mappings via local socket', async () => {
+			const mappings = await client.dump();
+			expect(mappings.length).toBeGreaterThan(0);
+			expect(mappings.find((m) => m.prog === 100000 && m.vers === 4 && m.netid === 'local')).toBeDefined();
+		});
+
+		it('should get address for local netid via local socket', async () => {
+			const addr = await client.getAddr({prog: 100000, vers: 4, netid: 'local'});
+			expect(addr).toBe(socketPath);
+		});
+
+		it('should successfully get address list via local socket', async () => {
+			const entries = await client.getAddrList({prog: 100000, vers: 4});
+			expect(entries.length).toBeGreaterThan(0);
+			expect(entries.find((e) => e.netid === 'local')).toBeDefined();
+		});
+
+		it('should register and unregister a service via local socket', async () => {
+			const prog = 777777;
+			const vers = 1;
+			const maddr = '/tmp/tiny-test.sock';
+
+			let entries = await client.getAddrList({prog, vers});
+			expect(entries.length).toBe(0);
+
+			const setRes = await client.setProgram({prog, vers}, 'local', maddr, 'owner');
+			expect(setRes).toBe(true);
+
+			entries = await client.getAddrList({prog, vers});
+			expect(entries.length).toBe(1);
+			expect(entries[0].maddr).toBe(maddr);
+			expect(entries[0].netid).toBe('local');
+
+			const unsetRes = await client.unsetProgram({prog, vers}, 'local');
+			expect(unsetRes).toBe(true);
+
+			entries = await client.getAddrList({prog, vers});
+			expect(entries.length).toBe(0);
+		});
+
+		it('should handle error when calling invalid procedure via local socket', async () => {
+			const request = new RpcRequest(invalidProcedure);
+			const response = await transport.call(request);
+			if (response.ok) {
+				throw new Error('Something is wrong, this should not happen');
+			}
+			expect(response.ok).toBe(false);
+			expect(response.error).toEqual(new RpcProcUnavailError('Procedure Unavailable', response.reply));
 		});
 	});
 });

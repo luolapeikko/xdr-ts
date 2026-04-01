@@ -7,6 +7,9 @@ export const RpcBindV3 = {
 	prog: 100000,
 	vers: 3,
 	procedures: {
+		RPCBPROC_NULL: {
+			proc: 0,
+		},
 		RPCBPROC_SET: {
 			proc: 1,
 			request: RpcType.rpcb,

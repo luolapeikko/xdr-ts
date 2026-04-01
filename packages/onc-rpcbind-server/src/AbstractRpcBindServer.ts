@@ -73,49 +73,51 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 
 		switch (procedure) {
 			case buildKey(PortMapperV2, 'PMAPPROC_NULL'):
-				this.logger?.debug(`Received null ${reqCall.vers} procedure call`);
+			case buildKey(RpcBindV3, 'RPCBPROC_NULL'):
+			case buildKey(RpcBindV4, 'RPCBPROC_NULL'):
+				this.logger?.debug(`Received NULL ${reqCall.vers} procedure call`);
 				break;
 
 			case buildKey(RpcBindV3, 'RPCBPROC_GETTIME'):
 			case buildKey(RpcBindV4, 'RPCBPROC_GETTIME'):
-				this.logger?.debug(`Received getTime ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_GETTIME ${reqCall.vers} procedure call`);
 				results = this.getTime();
 				break;
 
 			case buildKey(RpcBindV4, 'RPCBPROC_GETADDRLIST'): {
-				this.logger?.debug(`Received getAddrList ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_GETADDRLIST ${reqCall.vers} procedure call`);
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.getAddrList(rpcb.prog, rpcb.vers);
 				break;
 			}
 			case buildKey(PortMapperV2, 'PMAPPROC_DUMP'): {
-				this.logger?.debug(`Received dump ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received PMAPPROC_DUMP ${reqCall.vers} procedure call`);
 				results = this.getV2Dump();
 				break;
 			}
 			case buildKey(RpcBindV4, 'RPCBPROC_DUMP'):
 			case buildKey(RpcBindV3, 'RPCBPROC_DUMP'): {
-				this.logger?.debug(`Received dump ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_DUMP ${reqCall.vers} procedure call`);
 				results = this.getV3Dump();
 				break;
 			}
 			case buildKey(RpcBindV4, 'RPCBPROC_GETADDR'):
 			case buildKey(RpcBindV3, 'RPCBPROC_GETADDR'): {
-				this.logger?.debug(`Received getAddr ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_GETADDR ${reqCall.vers} procedure call`);
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.getAddr(rpcb);
 				break;
 			}
 			case buildKey(RpcBindV4, 'RPCBPROC_SET'):
 			case buildKey(RpcBindV3, 'RPCBPROC_SET'): {
-				this.logger?.debug(`Received setProgram ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_SET ${reqCall.vers} procedure call`);
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.setProgram(rpcb);
 				break;
 			}
 			case buildKey(RpcBindV4, 'RPCBPROC_UNSET'):
 			case buildKey(RpcBindV3, 'RPCBPROC_UNSET'): {
-				this.logger?.debug(`Received unsetProgram ${reqCall.vers} procedure call`);
+				this.logger?.debug(`Received RPCBPROC_UNSET ${reqCall.vers} procedure call`);
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.unsetProgram(rpcb);
 				break;
