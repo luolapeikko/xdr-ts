@@ -1,24 +1,23 @@
 import * as dgram from 'node:dgram';
 import * as fs from 'node:fs';
 import * as net from 'node:net';
+import * as os from 'node:os';
 import type {ILoggerLike} from '@avanio/logger-like';
 import {XdrBuffer} from '@luolapeikko/onc-node';
-import {type RpcbEntry, RpcbSemantics, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
+import {type RpcbEntry, type RpcbProtocol, type RpcbProtoFamily, RpcbSemantics, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
 import type {IXdrBuffer} from '@luolapeikko/onc-xdr';
 import http from 'http';
 import {AbstractRpcBindServer} from './AbstractRpcBindServer';
+import {isIPv6Supported} from './lib/networkUtils';
+import {dropNullishValues} from './lib/paramUtils';
 import {getWebsocketServer} from './Websocket';
 
 export type RpcBindServerOptions = {
 	tcp?: boolean;
 	udp?: boolean;
 	ipv6?: boolean;
-	ws?: boolean;
-	/**
-	 * Enable Unix domain socket (Linux/macOS) or Windows named pipe listener.
-	 * Requires `socketPath` to be set.
-	 */
-	local?: boolean;
+	/** allow SET and UNSET operations from any host. */
+	inSecure?: boolean;
 	/**
 	 * Path for the IPC socket.
 	 * - Linux/macOS: Unix domain socket path (e.g. '/run/rpcbind.sock')
@@ -43,40 +42,38 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 	readonly #options: {
 		tcp: boolean;
 		udp: boolean;
-		ws: boolean;
 		ipv6: boolean;
-		local: boolean;
-		socketPath: string | undefined;
+		inSecure: boolean;
+		socketPath: string;
 		socketMode: number;
-		wsPort: number;
+		wsPort: number | undefined;
 		bindAddress: string;
 		bindIpv6Address: string;
 		allowOrigins: string[];
 	};
-	#tcpServer: net.Server | undefined;
-	#udpSocket: dgram.Socket | undefined;
-	#httpSocket: http.Server | undefined;
+	#tcpServers: net.Server[] = [];
+	#udpSockets: dgram.Socket[] = [];
+	#httpSockets: http.Server[] = [];
 	#localServer: net.Server | undefined;
 
 	#defaultOptions = {
 		tcp: true,
 		udp: true,
-		ws: false,
-		ipv6: false,
-		local: false,
-		socketPath: undefined,
+		ipv6: isIPv6Supported(),
+		inSecure: false,
+		socketPath: os.platform() === 'win32' ? '\\\\.\\pipe\\rpcbind' : '/run/rpcbind.sock',
 		socketMode: 0o666,
 		logger: undefined,
-		wsPort: 8111,
-		bindAddress: '127.0.0.1',
-		bindIpv6Address: '::1',
+		wsPort: undefined,
+		bindAddress: '0.0.0.0',
+		bindIpv6Address: '::',
 		allowOrigins: [],
 	} as const satisfies RpcBindServerOptions;
 
 	public constructor(port: number, options?: RpcBindServerOptions) {
 		super(options);
 		this.#port = port;
-		this.#options = Object.assign({}, this.#defaultOptions, options);
+		this.#options = Object.assign({}, this.#defaultOptions, dropNullishValues(options ?? {}));
 	}
 
 	public createXdrBuffer(initialize?: number | Buffer): IXdrBuffer<Buffer> {
@@ -85,97 +82,87 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 
 	public async bind(): Promise<void> {
 		const promises: Promise<void>[] = [];
-		const localRpcUaddr = RpcUniversalAddress.from({host: '127.0.0.1', port: this.#port});
+		const ipv4RpcUaddr = RpcUniversalAddress.from({host: this.#options.bindAddress, port: this.#port});
+		const ipv6RpcUaddr = RpcUniversalAddress.from({host: this.#options.bindIpv6Address, port: this.#port});
 		if (this.#options.tcp) {
 			promises.push(this.bindTcp());
-			const entry: RpcbEntry = {
-				maddr: localRpcUaddr,
+			this.#registerRpcBindEntry({
+				maddr: ipv4RpcUaddr,
 				netid: 'tcp',
 				semantics: RpcbSemantics.CLTS,
 				protofmly: 'inet',
 				proto: 'tcp',
-			};
-			this.services.set(this.getKey(entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry});
-			this.logger?.info(`Bound to TCP on port ${this.#options.bindAddress}:${this.#port}`);
+			});
 		}
 		if (this.#options.udp) {
 			promises.push(this.bindUdp());
-			const entry: RpcbEntry = {
-				maddr: localRpcUaddr,
+			this.#registerRpcBindEntry({
+				maddr: ipv4RpcUaddr,
 				netid: 'udp',
 				semantics: RpcbSemantics.COTS_ORD,
 				protofmly: 'inet',
 				proto: 'udp',
-			};
-			this.services.set(this.getKey(entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry});
-			this.logger?.info(`Bound to UDP on port ${this.#options.bindAddress}:${this.#port}`);
+			});
 		}
 		if (this.#options.ipv6) {
 			if (this.#options.tcp) {
 				promises.push(this.bindTcpIpv6());
-				const ipv6Entry: RpcbEntry = {
-					maddr: RpcUniversalAddress.from({host: '::1', port: this.#port}),
+				this.#registerRpcBindEntry({
+					maddr: ipv6RpcUaddr,
 					netid: 'tcp6',
 					semantics: RpcbSemantics.CLTS,
 					protofmly: 'inet6',
 					proto: 'tcp',
-				};
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry: ipv6Entry});
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry: ipv6Entry});
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry: ipv6Entry});
-				this.logger?.info(`Bound to TCP on port ${this.#options.bindIpv6Address}:${this.#port}`);
+				});
 			}
 			if (this.#options.udp) {
 				promises.push(this.bindUdpIpv6());
-				const ipv6Entry: RpcbEntry = {
-					maddr: RpcUniversalAddress.from({host: '::1', port: this.#port}),
+				this.#registerRpcBindEntry({
+					maddr: ipv6RpcUaddr,
 					netid: 'udp6',
 					semantics: RpcbSemantics.COTS_ORD,
 					protofmly: 'inet6',
 					proto: 'udp',
-				};
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry: ipv6Entry});
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry: ipv6Entry});
-				this.services.set(this.getKey(ipv6Entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry: ipv6Entry});
-				this.logger?.info(`Bound to UDP on port ${this.#options.bindIpv6Address}:${this.#port}`);
+				});
 			}
 		}
-		if (this.#options.ws) {
-			const entry: RpcbEntry = {
-				maddr: localRpcUaddr,
+		if (this.#options.wsPort) {
+			promises.push(this.bindWs());
+			this.#registerRpcBindEntry({
+				maddr: RpcUniversalAddress.from({host: this.#options.bindAddress, port: this.#options.wsPort}),
 				netid: 'ws',
 				semantics: RpcbSemantics.COTS_ORD,
 				protofmly: 'inet',
 				proto: 'ws',
-			};
-			this.services.set(this.getKey(entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry});
-			await this.bindWebsocket();
-			this.logger?.info(`Bound to Websocket on port ${this.#options.wsPort}`);
-		}
-		if (this.#options.local) {
-			if (!this.#options.socketPath) {
-				throw new Error('socketPath must be set when local is enabled');
+			});
+			if (this.#options.ipv6) {
+				promises.push(this.bindWsIpv6());
+				this.#registerRpcBindEntry({
+					maddr: RpcUniversalAddress.from({host: this.#options.bindIpv6Address, port: this.#options.wsPort}),
+					netid: 'ws6',
+					semantics: RpcbSemantics.COTS_ORD,
+					protofmly: 'inet6',
+					proto: 'ws',
+				});
 			}
-			const entry: RpcbEntry = {
-				maddr: this.#options.socketPath,
-				netid: 'local',
-				semantics: RpcbSemantics.COTS_ORD,
-				protofmly: 'loopback',
-				proto: '-',
-			};
-			this.services.set(this.getKey(entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry});
-			this.services.set(this.getKey(entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry});
-			promises.push(this.bindLocal(this.#options.socketPath));
-			this.logger?.info(`Bound to local socket at ${this.#options.socketPath}`);
 		}
+
+		this.#registerRpcBindEntry({
+			maddr: this.#options.socketPath.replaceAll('\\', '/'),
+			netid: 'local',
+			semantics: RpcbSemantics.COTS_ORD,
+			protofmly: 'loopback',
+			proto: '-',
+		});
+		promises.push(this.bindLocal(this.#options.socketPath));
+		// wait for all listeners to be up before returning
 		await Promise.all(promises);
+	}
+
+	#registerRpcBindEntry(entry: RpcbEntry): void {
+		this.services.set(this.getKey(entry.netid, 100000, 2), {prog: 100000, vers: 2, owner: 'superuser', entry});
+		this.services.set(this.getKey(entry.netid, 100000, 3), {prog: 100000, vers: 3, owner: 'superuser', entry});
+		this.services.set(this.getKey(entry.netid, 100000, 4), {prog: 100000, vers: 4, owner: 'superuser', entry});
 	}
 
 	private addOriginRule(origin: string): boolean {
@@ -205,30 +192,34 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 		return false;
 	}
 
-	private async bindWebsocket(): Promise<void> {
-		if (!this.#options.ws) {
+	#setupCorsHeaders(req: http.IncomingMessage, res: http.ServerResponse) {
+		const origin = req.headers.origin;
+		if (origin && this.addOriginRule(origin)) {
+			res.setHeader('Access-Control-Allow-Origin', origin);
+			res.setHeader('Vary', 'Origin');
+			res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+			res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+		}
+		if (origin && req.method === 'OPTIONS') {
+			res.writeHead(204);
+			return res.end();
+		}
+	}
+
+	private async bindWs(): Promise<void> {
+		if (!this.#options.wsPort) {
 			return Promise.resolve();
 		}
 		const WebSocketServer = await getWebsocketServer();
-		this.#httpSocket = http.createServer((req, res) => {
-			const origin = req.headers.origin;
-			if (origin && this.addOriginRule(origin)) {
-				res.setHeader('Access-Control-Allow-Origin', origin);
-				res.setHeader('Vary', 'Origin');
-				res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-				res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-			}
-			if (origin && req.method === 'OPTIONS') {
-				res.writeHead(204);
-				return res.end();
-			}
-		});
-		this.#httpSocket.listen(this.#options.wsPort, this.#options.bindAddress, () => {
+		const httpServer = http.createServer((req, res) => this.#setupCorsHeaders(req, res));
+		this.#httpSockets.push(httpServer);
+		httpServer.listen({port: this.#options.wsPort, host: this.#options.bindAddress}, () => {
+			this.logger?.info(`Bound to WS on port ${this.#options.bindAddress}:${this.#options.wsPort} ${this.inSecure ? '[RW]' : '[RO]'}`);
 			console.log(`Listening on ${this.#options.bindAddress}:${this.#options.wsPort}`);
 		});
-		const wss = new WebSocketServer({server: this.#httpSocket});
+		const wss = new WebSocketServer({server: httpServer});
 		wss.on('connection', (ws, req) => {
-			ws.on('message', async (message) => {
+			ws.on('message', (message) => {
 				if (!this.checkAllowIp(req.socket.remoteAddress)) {
 					return;
 				}
@@ -243,7 +234,43 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 				} else {
 					payload = Buffer.from(message);
 				}
-				const response = await this.handleRequest(payload);
+				const response = this.handleRequest(payload, 'inet', 'ws');
+				if (ws.readyState === ws.OPEN) {
+					ws.send(response);
+				}
+			});
+		});
+	}
+
+	private async bindWsIpv6(): Promise<void> {
+		if (!this.#options.wsPort) {
+			return Promise.resolve();
+		}
+		const WebSocketServer = await getWebsocketServer();
+		const httpServer = http.createServer((req, res) => this.#setupCorsHeaders(req, res));
+		this.#httpSockets.push(httpServer);
+		httpServer.listen({port: this.#options.wsPort, host: this.#options.bindIpv6Address, ipv6Only: true}, () => {
+			this.logger?.info(`Bound to WS on port ${this.#options.bindIpv6Address}:${this.#options.wsPort} ${this.inSecure ? '[RW]' : '[RO]'}`);
+			console.log(`Listening on ${this.#options.bindIpv6Address}:${this.#options.wsPort}`);
+		});
+		const wss = new WebSocketServer({server: httpServer});
+		wss.on('connection', (ws, req) => {
+			ws.on('message', (message) => {
+				if (!this.checkAllowIp(req.socket.remoteAddress)) {
+					return;
+				}
+				if (typeof message === 'string') {
+					return; // ignore text messages
+				}
+				let payload: Buffer;
+				if (Array.isArray(message)) {
+					payload = Buffer.concat(message);
+				} else if (message instanceof ArrayBuffer) {
+					payload = Buffer.from(message);
+				} else {
+					payload = Buffer.from(message);
+				}
+				const response = this.handleRequest(payload, 'inet6', 'ws');
 				if (ws.readyState === ws.OPEN) {
 					ws.send(response);
 				}
@@ -253,12 +280,14 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 
 	private bindTcp(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.#tcpServer = net.createServer((socket) => {
+			const tcpServer = net.createServer((socket) => {
 				this.logger?.debug(`TCP connection from ${socket.remoteAddress}:${socket.remotePort}`);
-				this.attachStreamSocket(socket);
+				this.attachStreamSocket(socket, 'inet', 'tcp');
 			});
-			this.#tcpServer.on('error', reject);
-			this.#tcpServer.listen(this.#port, this.#options.bindAddress, () => {
+			this.#tcpServers.push(tcpServer);
+			tcpServer.on('error', reject);
+			tcpServer.listen({port: this.#port, host: this.#options.bindAddress}, () => {
+				this.logger?.info(`Bound to TCP on port ${this.#options.bindAddress}:${this.#port} ${this.inSecure ? '[RW]' : '[RO]'}`);
 				resolve();
 			});
 		});
@@ -266,12 +295,14 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 
 	private bindTcpIpv6(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.#tcpServer = net.createServer((socket) => {
+			const tcpServer = net.createServer((socket) => {
 				this.logger?.debug(`TCP connection from ${socket.remoteAddress}:${socket.remotePort}`);
-				this.attachStreamSocket(socket);
+				this.attachStreamSocket(socket, 'inet6', 'tcp');
 			});
-			this.#tcpServer.on('error', reject);
-			this.#tcpServer.listen(this.#port, this.#options.bindIpv6Address, () => {
+			this.#tcpServers.push(tcpServer);
+			tcpServer.on('error', reject);
+			tcpServer.listen({port: this.#port, host: this.#options.bindIpv6Address, ipv6Only: true}, () => {
+				this.logger?.info(`Bound to TCP on port ${this.#options.bindIpv6Address}:${this.#port} ${this.inSecure ? '[RW]' : '[RO]'}`);
 				resolve();
 			});
 		});
@@ -279,18 +310,20 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 
 	private bindUdp(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.#udpSocket = dgram.createSocket('udp4');
-			this.#udpSocket.on('message', (msg, rinfo) => {
+			const udpSocket = dgram.createSocket({type: 'udp4'});
+			this.#udpSockets.push(udpSocket);
+			udpSocket.on('message', (msg, rinfo) => {
 				this.logger?.debug(`Received UDP message from ${rinfo.address}:${rinfo.port} - ${msg.length} bytes`);
 				try {
-					const response = this.handleRequest(msg);
-					this.#udpSocket?.send(response, rinfo.port, rinfo.address);
+					const response = this.handleRequest(msg, 'inet', 'udp');
+					udpSocket.send(response, rinfo.port, rinfo.address);
 				} catch (_e) {
 					// silent
 				}
 			});
-			this.#udpSocket.on('error', reject);
-			this.#udpSocket.bind(this.#port, this.#options.bindAddress, () => {
+			udpSocket.on('error', reject);
+			udpSocket.bind(this.#port, this.#options.bindAddress, () => {
+				this.logger?.info(`Bound to UDP on port ${this.#options.bindAddress}:${this.#port} ${this.inSecure ? '[RW]' : '[RO]'}`);
 				resolve();
 			});
 		});
@@ -298,18 +331,20 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 
 	private bindUdpIpv6(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.#udpSocket = dgram.createSocket('udp6');
-			this.#udpSocket.on('message', (msg, rinfo) => {
+			const udpSocket = dgram.createSocket({type: 'udp6', ipv6Only: true});
+			this.#udpSockets.push(udpSocket);
+			udpSocket.on('message', (msg, rinfo) => {
 				this.logger?.debug(`Received UDP message from ${rinfo.address}:${rinfo.port} - ${msg.length} bytes`);
 				try {
-					const response = this.handleRequest(msg);
-					this.#udpSocket?.send(response, rinfo.port, rinfo.address);
+					const response = this.handleRequest(msg, 'inet6', 'udp');
+					udpSocket.send(response, rinfo.port, rinfo.address);
 				} catch (_e) {
 					// silent
 				}
 			});
-			this.#udpSocket.on('error', reject);
-			this.#udpSocket.bind(this.#port, this.#options.bindIpv6Address, () => {
+			udpSocket.on('error', reject);
+			udpSocket.bind(this.#port, this.#options.bindIpv6Address, () => {
+				this.logger?.info(`Bound to UDP on port ${this.#options.bindIpv6Address}:${this.#port} ${this.inSecure ? '[RW]' : '[RO]'}`);
 				resolve();
 			});
 		});
@@ -323,51 +358,67 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 		if (this.#options.udp) {
 			promises.push(this.closeUdp());
 		}
-		if (this.#options.ws) {
+		if (this.#options.wsPort) {
 			promises.push(this.closeWebsocket());
 		}
-		if (this.#options.local && this.#options.socketPath) {
-			promises.push(this.closeLocal(this.#options.socketPath));
-		}
+		promises.push(this.closeLocal(this.#options.socketPath));
 		const results = await Promise.all(promises);
-		this.#tcpServer = undefined;
-		this.#udpSocket = undefined;
-		this.#httpSocket = undefined;
+		this.#tcpServers = [];
+		this.#udpSockets = [];
+		this.#httpSockets = [];
 		this.#localServer = undefined;
 		return results.every((r) => r === true);
 	}
 
-	private closeTcp(): Promise<boolean> {
-		return new Promise((resolve) => {
-			if (!this.#tcpServer) {
-				return resolve(true);
-			}
-			this.#tcpServer.close((err) => {
-				resolve(!err);
-			});
-		});
+	private async closeTcp(): Promise<boolean> {
+		if (this.#tcpServers.length === 0) {
+			return true;
+		}
+		const results = await Promise.all(
+			this.#tcpServers.map(
+				(server) =>
+					new Promise<boolean>((resolve) => {
+						server.close((err) => {
+							resolve(!err);
+						});
+					}),
+			),
+		);
+		return results.every(Boolean);
 	}
 
-	private closeUdp(): Promise<boolean> {
-		return new Promise((resolve) => {
-			if (!this.#udpSocket) {
-				return resolve(true);
-			}
-			this.#udpSocket.close(() => {
-				resolve(true);
-			});
-		});
+	private async closeUdp(): Promise<boolean> {
+		if (this.#udpSockets.length === 0) {
+			return true;
+		}
+		const results = await Promise.all(
+			this.#udpSockets.map(
+				(socket) =>
+					new Promise<boolean>((resolve) => {
+						socket.close(() => {
+							resolve(true);
+						});
+					}),
+			),
+		);
+		return results.every(Boolean);
 	}
 
-	private closeWebsocket(): Promise<boolean> {
-		return new Promise((resolve) => {
-			if (!this.#httpSocket) {
-				return resolve(true);
-			}
-			this.#httpSocket.close(() => {
-				resolve(true);
-			});
-		});
+	private async closeWebsocket(): Promise<boolean> {
+		if (this.#httpSockets.length === 0) {
+			return true;
+		}
+		const results = await Promise.all(
+			this.#httpSockets.map(
+				(server) =>
+					new Promise<boolean>((resolve) => {
+						server.close(() => {
+							resolve(true);
+						});
+					}),
+			),
+		);
+		return results.every(Boolean);
 	}
 
 	private bindLocal(socketPath: string): Promise<void> {
@@ -379,12 +430,17 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 		}
 		return new Promise((resolve, reject) => {
 			this.#localServer = net.createServer((socket) => {
-				this.attachStreamSocket(socket);
+				this.attachStreamSocket(socket, 'loopback', '-');
 			});
 			this.#localServer.on('error', reject);
 			this.#localServer.listen(socketPath, () => {
 				if (process.platform !== 'win32') {
 					fs.chmodSync(socketPath, this.#options.socketMode);
+				}
+				if (process.platform !== 'win32') {
+					this.logger?.info(`Bound to local socket at ${this.#options.socketPath} mode=${this.#options.socketMode.toString(8)} [RW]`);
+				} else {
+					this.logger?.info(`Bound to local socket at ${this.#options.socketPath} [RW]`);
 				}
 				resolve();
 			});
@@ -411,7 +467,7 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 	 * Attaches TCP record-mark framing (RFC 5531) to a stream socket.
 	 * Used by both TCP and local (Unix domain socket / Windows named pipe) listeners.
 	 */
-	private attachStreamSocket(socket: net.Socket): void {
+	private attachStreamSocket(socket: net.Socket, protofmly: RpcbProtoFamily, proto: RpcbProtocol): void {
 		let buffer = Buffer.alloc(0);
 		socket.on('data', (data: Buffer) => {
 			buffer = Buffer.concat([buffer, data]);
@@ -423,7 +479,7 @@ export class RpcBindServer extends AbstractRpcBindServer<Buffer> {
 				const requestData = buffer.subarray(4, 4 + length);
 				buffer = buffer.subarray(4 + length);
 				try {
-					const response = this.handleRequest(requestData);
+					const response = this.handleRequest(requestData, protofmly, proto);
 					const responseHeader = Buffer.alloc(4);
 					responseHeader.writeUInt32BE((0x80000000 | response.length) >>> 0, 0);
 					socket.write(responseHeader);

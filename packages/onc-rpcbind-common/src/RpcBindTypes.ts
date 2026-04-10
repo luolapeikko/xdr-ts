@@ -12,18 +12,23 @@ export const RpcbSemantics = {
 export type RpcbSemantics = (typeof RpcbSemantics)[keyof typeof RpcbSemantics];
 
 
+export type RpcbProtoFamily = 'inet' | 'inet6' | 'loopback';
 
+export type RpcbProtocol = 'udp' | 'tcp' | 'ws' | '-';
 
 
 export interface RpcbEntry {
 	maddr: string;
 	netid: RpcNetId;
 	semantics: RpcbSemantics;
-	protofmly: 'inet' | 'inet6' | 'loopback';
-	proto: 'udp' | 'tcp' | 'ws' | '-';
+	protofmly: RpcbProtoFamily;
+	proto: RpcbProtocol;
 }
 
-export type RpcNetId = 'udp' | 'tcp' | 'udp6' | 'tcp6' | 'local' | 'ws' | 'ws6';
+export type RpcNetIdV6 = 'udp6' | 'tcp6' | 'ws6';
+export type RpcNetIdV4 = 'udp' | 'tcp' | 'ws';
+export type RpcNetIdLocal = 'local'; 
+export type RpcNetId = RpcNetIdV4 | RpcNetIdV6 | RpcNetIdLocal;
 
 export interface Netbuf<B extends Uint8Array = Uint8Array> {
 	maxlen: number;

@@ -1,4 +1,5 @@
 import {
+	callProcedure,
 	type GetAddrListRequest,
 	type GetAddrRequest,
 	type IRpcTransport,
@@ -6,6 +7,7 @@ import {
 	PortMapperV2,
 	type PortMapperV2CallItRequest,
 	type PortMapperV2CallItResponse,
+	type PortMapperV2Mapping,
 	programAsRpcProcedure,
 	RpcBindV3,
 	RpcBindV4,
@@ -55,6 +57,10 @@ export class RpcBindClient {
 
 	public getAddr({netid, prog, vers}: GetAddrRequest): Promise<string> {
 		return this.callProcedure(RpcBindV4, 'RPCBPROC_GETADDR', {netid, prog, vers, addr: '', owner: ''});
+	}
+
+	public getPort({prog, prot, vers}: Omit<PortMapperV2Mapping, 'port'>): Promise<number> {
+		return this.callProcedure(PortMapperV2, 'PMAPPROC_GETPORT', {prog, prot, vers, port: 0});
 	}
 
 	public getVersAddr({netid, prog, vers}: GetAddrRequest): Promise<string> {
@@ -113,26 +119,12 @@ export class RpcBindClient {
 		};
 	}
 
-	private async callProcedure<TProcedures extends Record<string, RpcProgramCoder>, TProcedure extends keyof TProcedures>(
+	private callProcedure<TProcedures extends Record<string, RpcProgramCoder>, TProcedure extends keyof TProcedures>(
 		setup: RpcProgramSetup & {procedures: TProcedures},
 		procedure: TProcedure,
 		args?: InferXdrCodecInput<TProcedures[TProcedure]['request']>,
 	): Promise<InferXdrCodecOutput<TProcedures[TProcedure]['response']>> {
-		const proc = setup.procedures[procedure];
-		const request = new RpcRequest(
-			{proc: proc.proc, prog: setup.prog, vers: setup.vers},
-			{
-				args: (xdr) => proc.request?.encode(xdr, args),
-			},
-		);
-		const response = await this.transport.call(request);
-		if (!response.ok) {
-			throw response.error;
-		}
-		if (proc.response) {
-			return proc.response.decode(response.xdr);
-		}
-		return undefined as InferXdrCodecOutput<TProcedures[TProcedure]['response']>;
+		return callProcedure(setup, procedure, this.transport, args);
 	}
 
 	private async call<A = never, R = void>(call: RpcCallType<A, R>, args?: A): Promise<R> {

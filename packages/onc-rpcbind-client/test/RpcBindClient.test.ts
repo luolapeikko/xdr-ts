@@ -66,6 +66,13 @@ describe('Rpc Abstraction (Transport Based)', () => {
 			expect(addr, `RpcBind UDP Address: ${addr}`).toBeDefined();
 			expect(addr.length, `RpcBind UDP Address length: ${addr.length}`).toBeGreaterThan(0);
 		});
+		it('should successfully call GETPORT (UDP) for rpcbind', async () => {
+			const port = await rpcbind.getPort({prog: 100000, vers: 2, prot: 17});
+			expect(port, `RpcBind UDP GETPORT: ${port}`).toBeGreaterThan(0);
+		});
+		it('should return 0 for GETPORT (UDP) for non-existent program', async () => {
+			await expect(rpcbind.getPort({prog: 999111, vers: 1, prot: 17})).resolves.toBe(0);
+		});
 		it('should return address for GETVERSADDR with exact version match (UDP)', async () => {
 			const addr = await rpcbind.getVersAddr({prog: 100000, vers: 4, netid: 'udp'});
 			expect(addr, `RpcBind GETVERSADDR UDP Address: ${addr}`).toBeDefined();
@@ -174,6 +181,13 @@ describe('Rpc Abstraction (Transport Based)', () => {
 			const addr = await rpcbind.getAddr({prog: 100000, vers: 4, netid: 'tcp'});
 			expect(addr, `RpcBind TCP Address: ${addr}`).toBeDefined();
 			expect(addr.length, `RpcBind TCP Address length: ${addr.length}`).toBeGreaterThan(0);
+		});
+		it('should successfully call GETPORT (TCP) for rpcbind', async () => {
+			const port = await rpcbind.getPort({prog: 100000, vers: 2, prot: 6});
+			expect(port, `RpcBind TCP GETPORT: ${port}`).toBeGreaterThan(0);
+		});
+		it('should return 0 for GETPORT (TCP) for non-existent program', async () => {
+			await expect(rpcbind.getPort({prog: 999111, vers: 1, prot: 6})).resolves.toBe(0);
 		});
 		it('should successfully call GETADDRLIST (TCP) for rpcbind', async () => {
 			const entries = await rpcbind.getAddrList({prog: 100000, vers: 4});

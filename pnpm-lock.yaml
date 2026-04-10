@@ -48,12 +48,24 @@ importers:
       '@luolapeikko/onc-xdr':
         specifier: workspace:*
         version: link:../onc-xdr
+      '@luolapeikko/result-option':
+        specifier: ^2.2.1
+        version: 2.2.1
       '@open-draft/deferred-promise':
         specifier: ^2.2.0
         version: 2.2.0
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
+      net-address:
+        specifier: ^0.0.1
+        version: 0.0.1(@luolapeikko/result-option@2.2.1)
+      net-socket-address:
+        specifier: ^0.0.1
+        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1))
+      unix-socket-address:
+        specifier: ^0.0.1
+        version: 0.0.1
 
   packages/onc-rpcbind-client:
     devDependencies:
@@ -93,9 +105,30 @@ importers:
       '@luolapeikko/onc-xdr':
         specifier: workspace:*
         version: link:../onc-xdr
+      '@luolapeikko/result-option':
+        specifier: ^2.2.1
+        version: 2.2.1
       '@open-draft/deferred-promise':
         specifier: ^2.2.0
         version: 2.2.0
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      minimist:
+        specifier: ^1.2.8
+        version: 1.2.8
+      net-address:
+        specifier: ^0.0.1
+        version: 0.0.1(@luolapeikko/result-option@2.2.1)
+      net-socket-address:
+        specifier: ^0.0.1
+        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1))
+      unix-socket-address:
+        specifier: ^0.0.1
+        version: 0.0.1
       ws:
         specifier: ^8.20.0
         version: 8.20.0
@@ -392,6 +425,9 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@luolapeikko/result-option@2.2.1':
+    resolution: {integrity: sha512-0QffjTixx4gH+SXaIu0l3xZwcM8GedNbvtXX8gDpDxQoyH2Do0taXth9PnTiKPO6OL/tl3I/aS1UIn9jIdbtQg==}
+
   '@napi-rs/wasm-runtime@1.1.1':
     resolution: {integrity: sha512-p64ah1M1ld8xjWv3qbvFwHiFVWrq1yFvV4f7w+mzaqiR4IlSgkqhcRdHwsGgomwzBH51sRY4NEowLxnaBjcW/A==}
 
@@ -666,6 +702,9 @@ packages:
 
   '@types/node@25.5.0':
     resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260331.1':
     resolution: {integrity: sha512-1PRnBCN2csiCzj76YaSBtP4jPLEGBUmVhXHplC+yHOKaxx9nf3HFiFCg/19raInvN/lJ8+Bp1fZ/qIsWAAHiBw==}
@@ -960,6 +999,9 @@ packages:
     resolution: {integrity: sha512-oRjTw/97aTBN0RHbYCdtF1MQfvusSIBQM0IZEgzl6426+8jSC0nF1a/GmnVLpfB9yyr6g6FTqWqiZVbxrtaCIg==}
     engines: {node: 18 || 20 || >=22}
 
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
   minipass@7.1.3:
     resolution: {integrity: sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -971,6 +1013,16 @@ packages:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  net-address@0.0.1:
+    resolution: {integrity: sha512-bkDXNqYVu47xo5GtvWCLZZbnyFiYnqmuYVHj2RClO2IOxht3YWcT8fo50aFLM/EXl4WDk8byQVyAWg9oUGbS3w==}
+    peerDependencies:
+      '@luolapeikko/result-option': '>= 2.0.0'
+
+  net-socket-address@0.0.1:
+    resolution: {integrity: sha512-K0nIM5LyCDssq9Rpe55vzBRjR2R/+vLtlWYVBYPtxdLLLaV0EF2iLlm+1EKTOSVFfNMJXqdvb0qZboAQNzAzQQ==}
+    peerDependencies:
+      net-address: '>= 0.0.1'
 
   obug@2.1.1:
     resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
@@ -1168,6 +1220,9 @@ packages:
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+
+  unix-socket-address@0.0.1:
+    resolution: {integrity: sha512-sXyms4VUkpQwGySCXDuoZmjnMCMBg3qPzKDQDWBgKZcxlNux/U4w5IfFNOu7JsI8S4kSTGBx4yBd6rym8nqAyQ==}
 
   unrun@0.2.34:
     resolution: {integrity: sha512-LyaghRBR++r7svhDK6tnDz2XaYHWdneBOA0jbS8wnRsHerI9MFljX4fIiTgbbNbEVzZ0C9P1OjWLLe1OqoaaEw==}
@@ -1496,6 +1551,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@luolapeikko/result-option@2.2.1': {}
+
   '@napi-rs/wasm-runtime@1.1.1':
     dependencies:
       '@emnapi/core': 1.8.1
@@ -1662,6 +1719,10 @@ snapshots:
   '@types/node@25.5.0':
     dependencies:
       undici-types: 7.18.2
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 25.5.0
 
   '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260331.1':
     optional: true
@@ -1952,11 +2013,21 @@ snapshots:
     dependencies:
       brace-expansion: 5.0.4
 
+  minimist@1.2.8: {}
+
   minipass@7.1.3: {}
 
   ms@2.1.3: {}
 
   nanoid@3.3.11: {}
+
+  net-address@0.0.1(@luolapeikko/result-option@2.2.1):
+    dependencies:
+      '@luolapeikko/result-option': 2.2.1
+
+  net-socket-address@0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1)):
+    dependencies:
+      net-address: 0.0.1(@luolapeikko/result-option@2.2.1)
 
   obug@2.1.1: {}
 
@@ -2160,6 +2231,8 @@ snapshots:
       quansync: 1.0.0
 
   undici-types@7.18.2: {}
+
+  unix-socket-address@0.0.1: {}
 
   unrun@0.2.34:
     dependencies:

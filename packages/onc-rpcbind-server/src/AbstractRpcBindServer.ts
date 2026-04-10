@@ -9,6 +9,8 @@ import {
 	RpcBindV3,
 	RpcBindV4,
 	type RpcbEntry,
+	type RpcbProtocol,
+	type RpcbProtoFamily,
 	RpcbSemantics,
 	type RpcbType,
 	RpcMsgType,
@@ -52,19 +54,22 @@ type ServiceKey = `${RpcNetId}:${number}:${number}`;
 
 export type AbstractRpcBindServerOptions = {
 	logger?: ILoggerLike;
+	inSecure?: boolean;
 };
 
 export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 	public abstract createXdrBuffer(initialize?: number | B): IXdrBuffer<B>;
 	protected readonly logger?: ILoggerLike;
+	protected readonly inSecure: boolean;
 
 	public constructor(options?: AbstractRpcBindServerOptions) {
 		this.logger = options?.logger;
+		this.inSecure = options?.inSecure ?? false;
 	}
 
 	protected readonly services = new Map<ServiceKey, ServiceEntry>();
 
-	protected handleRequest(data: B): Buffer<ArrayBufferLike> {
+	protected handleRequest(data: B, protofmly: RpcbProtoFamily, proto: RpcbProtocol): Buffer<ArrayBufferLike> {
 		const xdr = this.createXdrBuffer(data);
 		const reqCall = rpcCallSchemaModel.decode(xdr);
 		const procedure = normalizeRpcProcedure(reqCall);
@@ -108,18 +113,56 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 				results = this.getAddr(rpcb);
 				break;
 			}
+			case buildKey(PortMapperV2, 'PMAPPROC_GETPORT'): {
+				this.logger?.debug(`Received PMAPPROC_GETPORT ${reqCall.vers} procedure call`);
+				const mapping = PortMapperV2.procedures.PMAPPROC_GETPORT.request.decode(xdr);
+				results = this.getPort(mapping);
+				break;
+			}
 			case buildKey(RpcBindV4, 'RPCBPROC_SET'):
 			case buildKey(RpcBindV3, 'RPCBPROC_SET'): {
 				this.logger?.debug(`Received RPCBPROC_SET ${reqCall.vers} procedure call`);
+				if (!this.inSecure && protofmly !== 'loopback') {
+					acceptStat = RpcAcceptStat.PROC_UNAVAIL;
+					this.logger?.warn(`Refusing RPCBPROC_UNSET call from ${protofmly}/${proto} due to security`);
+					break;
+				}
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.setProgram(rpcb);
+				break;
+			}
+			case buildKey(PortMapperV2, 'PMAPPROC_SET'): {
+				this.logger?.debug(`Received PMAPPROC_SET ${reqCall.vers} procedure call`);
+				if (!this.inSecure && protofmly !== 'loopback') {
+					acceptStat = RpcAcceptStat.PROC_UNAVAIL;
+					this.logger?.warn(`Refusing PMAPPROC_SET call from ${protofmly}/${proto} due to security`);
+					break;
+				}
+				const mapping = PortMapperV2.procedures.PMAPPROC_SET.request.decode(xdr);
+				results = this.setProgram(this.#portMapperToRpcbType(mapping));
 				break;
 			}
 			case buildKey(RpcBindV4, 'RPCBPROC_UNSET'):
 			case buildKey(RpcBindV3, 'RPCBPROC_UNSET'): {
 				this.logger?.debug(`Received RPCBPROC_UNSET ${reqCall.vers} procedure call`);
+				if (!this.inSecure && protofmly !== 'loopback') {
+					acceptStat = RpcAcceptStat.PROC_UNAVAIL;
+					this.logger?.warn(`Refusing RPCBPROC_UNSET call from ${protofmly}/${proto} due to security`);
+					break;
+				}
 				const rpcb = RpcType.rpcb.decode(xdr);
 				results = this.unsetProgram(rpcb);
+				break;
+			}
+			case buildKey(PortMapperV2, 'PMAPPROC_UNSET'): {
+				this.logger?.debug(`Received PMAPPROC_UNSET ${reqCall.vers} procedure call`);
+				if (!this.inSecure && protofmly !== 'loopback') {
+					acceptStat = RpcAcceptStat.PROC_UNAVAIL;
+					this.logger?.warn(`Refusing PMAPPROC_UNSET call from ${protofmly}/${proto} due to security`);
+					break;
+				}
+				const mapping = PortMapperV2.procedures.PMAPPROC_UNSET.request.decode(xdr);
+				results = this.unsetProgram(this.#portMapperToRpcbType(mapping));
 				break;
 			}
 			default: {
@@ -133,6 +176,16 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 
 	protected getKey(netid: RpcNetId, prog: number, vers: number): ServiceKey {
 		return `${netid}:${prog}:${vers}`;
+	}
+
+	#portMapperToRpcbType(mapping: PortMapperV2Mapping): RpcbType {
+		return {
+			prog: mapping.prog,
+			vers: mapping.vers,
+			netid: mapping.prot === IPPROTO.TCP ? 'tcp' : 'udp',
+			addr: RpcUniversalAddress.from({host: '0.0.0.0', port: mapping.port}),
+			owner: 'portmapper',
+		};
 	}
 
 	private buildResponseHeader(xid: number, acceptStat: RpcAcceptStat, verf?: RpcAuthType) {
@@ -211,6 +264,17 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 		const service = this.services.get(key);
 		const xdrBuffer = RpcResponseSchema.getAddr.encode(this.createXdrBuffer(1024), service?.entry.maddr ?? '');
 		return xdrBuffer.sliceUsed();
+	}
+
+	/** portmapper PMAPPROC_GETPORT  */
+	private getPort(mapping: PortMapperV2Mapping) {
+		const key = this.getKey(mapping.prot === IPPROTO.TCP ? 'tcp' : 'udp', mapping.prog, mapping.vers);
+		const service = this.services.get(key);
+		const xdrBuffer = PortMapperV2.procedures.PMAPPROC_GETPORT.response.encode(
+			this.createXdrBuffer(4),
+			service ? RpcUniversalAddress.to(service.entry.maddr).port : 0,
+		);
+		return xdrBuffer.rawBuffer;
 	}
 
 	#netIdToV2Proto(netid: RpcNetId): PortMapperV2Mapping['prot'] {

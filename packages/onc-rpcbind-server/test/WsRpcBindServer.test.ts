@@ -2,6 +2,7 @@ import {RpcBindClient} from '@luolapeikko/onc-rpcbind-client';
 import {type RpcProcedure, RpcProcUnavailError, RpcRequest, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {RpcBindServer} from '../src/';
+import {getTestSocketFile} from './lib/localTestSocket';
 import {WebSocketTestTransport} from './lib/WebSocketTestTransport';
 
 const invalidProcedure = {prog: 100000, vers: 3, proc: 999} satisfies RpcProcedure;
@@ -16,7 +17,7 @@ describe('WsRpcBindServer', () => {
 		let server: RpcBindServer;
 
 		beforeAll(async () => {
-			server = new RpcBindServer(rpcPort, {ws: true, wsPort});
+			server = new RpcBindServer(rpcPort, {wsPort, socketPath: getTestSocketFile(), inSecure: true});
 			await server.bind();
 		});
 
@@ -78,7 +79,7 @@ describe('WsRpcBindServer', () => {
 
 		it('should get address via websocket', async () => {
 			const addr = await client.getAddr({prog: 100000, vers: 4, netid: 'tcp'});
-			expect(addr).toBe(RpcUniversalAddress.from({host: '127.0.0.1', port: rpcPort}));
+			expect(addr).toBe(RpcUniversalAddress.from({host: '0.0.0.0', port: rpcPort}));
 		});
 
 		afterAll(async () => {

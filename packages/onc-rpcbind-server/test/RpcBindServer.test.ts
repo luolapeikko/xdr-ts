@@ -1,8 +1,9 @@
 import {RpcNodeIpcTransport, RpcNodeTcpTransport, RpcNodeUdpTransport} from '@luolapeikko/onc-node';
 import {RpcBindClient} from '@luolapeikko/onc-rpcbind-client';
-import {type RpcProcedure, RpcProcUnavailError, RpcRequest, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
+import {IPPROTO, type RpcProcedure, RpcProcUnavailError, RpcRequest, RpcUniversalAddress} from '@luolapeikko/onc-rpcbind-common';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {RpcBindServer} from '../src/';
+import {getTestSocketFile} from './lib/localTestSocket';
 
 const invalidProcedure = {prog: 100000, vers: 3, proc: 999} satisfies RpcProcedure;
 
@@ -15,7 +16,7 @@ describe('RpcBindServer', () => {
 		const client = new RpcBindClient(transport);
 		let server: RpcBindServer;
 		beforeAll(async () => {
-			server = new RpcBindServer(testPort);
+			server = new RpcBindServer(testPort, {socketPath: getTestSocketFile(), inSecure: true});
 			await server.bind();
 		});
 		afterAll(async () => {
@@ -50,6 +51,10 @@ describe('RpcBindServer', () => {
 			expect(mappings.length).toBeGreaterThan(0);
 			expect(mappings.find((m) => m.prog === 100000 && m.vers === 4 && m.netid === 'tcp')).toBeDefined();
 		});
+		it('should get port via TCP', async () => {
+			const port = await client.getPort({prog: 100000, vers: 2, prot: IPPROTO.TCP});
+			expect(port).toBe(testPort);
+		});
 		it('should register and unregister a service', async () => {
 			const prog = 999999;
 			const vers = 1;
@@ -79,7 +84,7 @@ describe('RpcBindServer', () => {
 		});
 		it('should get address via TCP', async () => {
 			const addr = await client.getAddr({prog: 100000, vers: 4, netid: 'tcp'});
-			expect(addr).toBe(RpcUniversalAddress.from({host: '127.0.0.1', port: testPort}));
+			expect(addr).toBe(RpcUniversalAddress.from({host: '0.0.0.0', port: testPort}));
 		});
 	});
 
@@ -89,7 +94,7 @@ describe('RpcBindServer', () => {
 		const client = new RpcBindClient(transport);
 		let server: RpcBindServer;
 		beforeAll(async () => {
-			server = new RpcBindServer(udpPort);
+			server = new RpcBindServer(udpPort, {socketPath: getTestSocketFile(), inSecure: true});
 			await server.bind();
 		});
 		afterAll(async () => {
@@ -124,7 +129,11 @@ describe('RpcBindServer', () => {
 			expect(entries.length).toBeGreaterThan(0);
 			expect(entries.find((e) => e.netid === 'udp')).toBeDefined();
 		});
-		it('should register and unregister a service via UDP', async () => {
+		it('should get port via UDP', async () => {
+			const port = await client.getPort({prog: 100000, vers: 2, prot: IPPROTO.UDP});
+			expect(port).toBe(udpPort);
+		});
+		it('should register and unregister a service via UDP (insecure)', async () => {
 			const prog = 888888;
 			const vers = 2;
 			const maddr = '127.0.0.1.0.222';
@@ -149,52 +158,47 @@ describe('RpcBindServer', () => {
 		});
 		it('should get address via UDP', async () => {
 			const addr = await client.getAddr({prog: 100000, vers: 4, netid: 'udp'});
-			expect(addr).toBe(RpcUniversalAddress.from({host: '127.0.0.1', port: udpPort}));
+			expect(addr).toBe(RpcUniversalAddress.from({host: '0.0.0.0', port: udpPort}));
 		});
 	});
 
 	describe('generic port testing', () => {
 		it('should successfully bind and close both TCP and UDP listeners by default', async () => {
-			const server = new RpcBindServer(testPort);
+			const server = new RpcBindServer(testPort, {socketPath: getTestSocketFile()});
 			await expect(server.bind()).resolves.toBeUndefined();
 			const closed = await server.close();
 			expect(closed).toBe(true);
 		});
 
 		it('should support TCP only', async () => {
-			const server = new RpcBindServer(testPort + 3, {tcp: true, udp: false});
+			const server = new RpcBindServer(testPort + 3, {tcp: true, udp: false, socketPath: getTestSocketFile()});
 			await expect(server.bind()).resolves.toBeUndefined();
 			const closed = await server.close();
 			expect(closed).toBe(true);
 		});
 
 		it('should support UDP only', async () => {
-			const server = new RpcBindServer(testPort + 4, {tcp: false, udp: true});
+			const server = new RpcBindServer(testPort + 4, {tcp: false, udp: true, socketPath: getTestSocketFile()});
 			await expect(server.bind()).resolves.toBeUndefined();
 			const closed = await server.close();
 			expect(closed).toBe(true);
 		});
 
 		it('should return true for close() even if not bound', async () => {
-			const server = new RpcBindServer(testPort + 5);
+			const server = new RpcBindServer(testPort + 5, {socketPath: getTestSocketFile()});
 			const closed = await server.close();
 			expect(closed).toBe(true);
 		});
-
-		it('should throw when local is enabled but socketPath is not set', async () => {
-			const server = new RpcBindServer(testPort + 6, {tcp: false, udp: false, local: true});
-			await expect(server.bind()).rejects.toThrow('socketPath must be set when local is enabled');
-		});
 	});
 
-	describe('RpcIpcTransport (Unix domain socket)', () => {
-		const socketPath = '/tmp/rpcbind-test.sock';
+	describe('RpcIpcTransport (local socket)', () => {
+		const socketPath = getTestSocketFile();
 		const transport = new RpcNodeIpcTransport({path: socketPath});
 		const client = new RpcBindClient(transport);
 		let server: RpcBindServer;
 
 		beforeAll(async () => {
-			server = new RpcBindServer(testPort + 10, {tcp: false, udp: false, local: true, socketPath});
+			server = new RpcBindServer(testPort + 10, {tcp: false, udp: false, socketPath});
 			await server.bind();
 		});
 
@@ -234,7 +238,7 @@ describe('RpcBindServer', () => {
 		it('should register and unregister a service via local socket', async () => {
 			const prog = 777777;
 			const vers = 1;
-			const maddr = '/tmp/tiny-test.sock';
+			const maddr = getTestSocketFile();
 
 			let entries = await client.getAddrList({prog, vers});
 			expect(entries.length).toBe(0);
@@ -262,6 +266,26 @@ describe('RpcBindServer', () => {
 			}
 			expect(response.ok).toBe(false);
 			expect(response.error).toEqual(new RpcProcUnavailError('Procedure Unavailable', response.reply));
+		});
+	});
+	describe('RpcTcpTransport refuse insecure SET/UNSET (default)', () => {
+		const tcpPort = 11112;
+		const transport = new RpcNodeTcpTransport({port: tcpPort});
+		const client = new RpcBindClient(transport);
+		let server: RpcBindServer;
+		beforeAll(async () => {
+			server = new RpcBindServer(testPort, {socketPath: getTestSocketFile()});
+			await server.bind();
+		});
+		it('should refuse to register service via TCP when default security', async () => {
+			await expect(client.setProgram({prog: 123456, vers: 1}, 'tcp', '127.0.0.1.0.111', 'owner')).rejects.toThrow('Procedure Unavailable');
+		});
+		it('should refuse to unregister service via TCP when default security', async () => {
+			await expect(client.unsetProgram({prog: 123456, vers: 1}, 'tcp')).rejects.toThrow('Procedure Unavailable');
+		});
+		afterAll(async () => {
+			transport.close();
+			await server.close();
 		});
 	});
 });

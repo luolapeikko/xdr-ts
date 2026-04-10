@@ -23,6 +23,6 @@ export class CallbackTransportServer extends AbstractRpcBindServer<Buffer> imple
 		if (request.args) {
 			request.args(xdr);
 		}
-		return Promise.resolve(new RpcResponse(this, this.handleRequest(xdr.sliceUsed())));
+		return Promise.resolve(new RpcResponse(this, this.handleRequest(xdr.sliceUsed(), 'loopback', '-')));
 	}
 }

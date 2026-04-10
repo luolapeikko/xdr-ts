@@ -1,3 +1,4 @@
+export * from './callProcedure';
 export * from './portMapperV2';
 export * from './RpcBindProcedure';
 export * from './RpcBindRequest';
