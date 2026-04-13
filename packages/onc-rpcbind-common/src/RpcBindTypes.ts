@@ -17,7 +17,7 @@ export type RpcbProtoFamily = 'inet' | 'inet6' | 'loopback';
 export type RpcbProtocol = 'udp' | 'tcp' | 'ws' | '-';
 
 
-export interface RpcbEntry {
+export type RpcbEntry = {
 	maddr: string;
 	netid: RpcNetId;
 	semantics: RpcbSemantics;
@@ -30,7 +30,7 @@ export type RpcNetIdV4 = 'udp' | 'tcp' | 'ws';
 export type RpcNetIdLocal = 'local'; 
 export type RpcNetId = RpcNetIdV4 | RpcNetIdV6 | RpcNetIdLocal;
 
-export interface Netbuf<B extends Uint8Array = Uint8Array> {
+export type Netbuf<B extends Uint8Array = Uint8Array> = {
 	maxlen: number;
 	buf: B;
 }

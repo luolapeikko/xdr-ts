@@ -2,10 +2,10 @@ import {XdrType} from '@luolapeikko/onc-xdr';
 import {PortMapperV2Req, PortMapperV2Res} from '../portMapperV2';
 import type {RpcNetId} from '../RpcBindTypes';
 import type {RpcProgramSetup} from '../RpcProgram';
-import {RpcType} from '../RpcType';
+import {RpcTypeCoders} from '../RpcTypeCoders';
 import {RpcBindV4Res} from './response';
 
-export interface RpcbsAddrList {
+export type RpcbsAddrList = {
 	prog: number;
 	vers: number;
 	success: number;
@@ -13,7 +13,7 @@ export interface RpcbsAddrList {
 	netid: RpcNetId;
 }
 
-export interface RpcbsRmtCallList {
+export type RpcbsRmtCallList = {
 	prog: number;
 	vers: number;
 	proc: number;
@@ -23,7 +23,7 @@ export interface RpcbsRmtCallList {
 	netid: RpcNetId;
 }
 
-export interface RpcbStat {
+export type RpcbStat = {
 	info: number[];
 	setinfo: number;
 	unsetinfo: number;
@@ -40,22 +40,22 @@ export const RpcBindV4 = {
 		},
 		RPCBPROC_SET: {
 			proc: 1,
-			request: RpcType.rpcb,
+			request: RpcTypeCoders.rpcb,
 			response: XdrType.boolean,
 		},
 		RPCBPROC_UNSET: {
 			proc: 2,
-			request: RpcType.rpcb,
+			request: RpcTypeCoders.rpcb,
 			response: XdrType.boolean,
 		},
 		RPCBPROC_GETADDR: {
 			proc: 3,
-			request: RpcType.rpcb,
+			request: RpcTypeCoders.rpcb,
 			response: XdrType.string,
 		},
 		RPCBPROC_DUMP: {
 			proc: 4,
-			response: RpcType.rpcblist,
+			response: RpcTypeCoders.rpcblist,
 		},
 		RPCBPROC_BCAST: {
 			proc: 5,
@@ -69,16 +69,16 @@ export const RpcBindV4 = {
 		RPCBPROC_UADDR2TADDR: {
 			proc: 7,
 			request: XdrType.string,
-			response: RpcType.netbuf,
+			response: RpcTypeCoders.netbuf,
 		},
 		RPCBPROC_TADDR2UADDR: {
 			proc: 8,
-			request: RpcType.netbuf,
+			request: RpcTypeCoders.netbuf,
 			response: XdrType.string,
 		},
 		RPCBPROC_GETVERSADDR: {
 			proc: 9,
-			request: RpcType.rpcb,
+			request: RpcTypeCoders.rpcb,
 			response: XdrType.string,
 		},
 		RPCBPROC_INDIRECT: {
@@ -88,7 +88,7 @@ export const RpcBindV4 = {
 		},
 		RPCBPROC_GETADDRLIST: {
 			proc: 11,
-			request: RpcType.rpcb,
+			request: RpcTypeCoders.rpcb,
 			response: RpcBindV4Res.rpcb_entry_list,
 		},
 		RPCBPROC_GETSTAT: {

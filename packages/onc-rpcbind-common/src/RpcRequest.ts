@@ -1,5 +1,5 @@
 import type {IXdrBuffer} from '@luolapeikko/onc-xdr';
-import type {RpcProcedure} from './RpcType';
+import type {RpcProcedure} from './RpcTypeCoders';
 import {RpcAuthFlavor} from './schema/RpcAuth';
 
 export type RpcRequestOptions = {

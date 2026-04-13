@@ -11,7 +11,7 @@ export type RpcProcedure = RpcProgram & {
 	proc: number;
 };
 
-export class RpcType {
+export class RpcTypeCoders {
 	public static get netbuf(): IXdrCodec<Netbuf> {
 		return {
 			encode: (xdr, value) => xdr.writeUInt(value.maxlen).writeOpaque(value.buf),
@@ -51,10 +51,10 @@ export class RpcType {
 	 */
 	public static get rpcblist(): IXdrCodec<RpcbType[]> {
 		return {
-			encode: (xdr, value) => xdr.writeList(value, (x, service) => RpcType.rpcb.encode(x, service)),
+			encode: (xdr, value) => xdr.writeList(value, (x, service) => RpcTypeCoders.rpcb.encode(x, service)),
 			decode: (xdr) =>
 				xdr.readList(
-					(x) => RpcType.rpcb.decode(x),
+					(x) => RpcTypeCoders.rpcb.decode(x),
 					(x) => x.readUInt(),
 				),
 		};

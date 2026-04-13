@@ -1,7 +1,7 @@
 import type {InferXdrCodecInput, InferXdrCodecOutput} from '@luolapeikko/onc-xdr';
+import type {IRpcTransport} from './interfaces/IRpcTransport';
 import type {RpcProgramCoder, RpcProgramSetup} from './RpcProgram';
 import {RpcRequest} from './RpcRequest';
-import type {IRpcTransport} from './RpcTransport';
 
 /**
  * Builds and sends an RPC request for the specified procedure, and returns the decoded response.

@@ -1,5 +1,5 @@
 import {RpcNodeTcpTransport, RpcNodeUdpTransport} from '@luolapeikko/onc-node';
-import {type RpcCallType, type RpcNetId, RpcProcUnavailError, type RpcProgram, type RpcRemoteCallCoder, RpcRequest} from '@luolapeikko/onc-rpcbind-common';
+import {type RpcNetId, RpcProcUnavailError, type RpcProgram, type RpcRemoteCallCoder, RpcRequest} from '@luolapeikko/onc-rpcbind-common';
 import {XdrType} from '@luolapeikko/onc-xdr';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 import {RpcBindClient} from '../src';

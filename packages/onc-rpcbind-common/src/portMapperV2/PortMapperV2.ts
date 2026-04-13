@@ -21,14 +21,14 @@ export type PortMapperV2Mapping = {
 	port: number;
 };
 
-export interface PortMapperV2CallItRequest<A = any> {
+export type PortMapperV2CallItRequest<A = any> = {
 	prog: number;
 	vers: number;
 	proc: number;
 	args: A;
 }
 
-export interface PortMapperV2CallItResponse<R = any> {
+export type PortMapperV2CallItResponse<R = any> = {
 	addr: string;
 	results: R;
 }

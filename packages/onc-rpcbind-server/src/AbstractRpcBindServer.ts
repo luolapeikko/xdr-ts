@@ -1,6 +1,5 @@
 import type {ILoggerLike} from '@avanio/logger-like';
 import {
-	type GetAddrRequest,
 	IPPROTO,
 	PortMapperV2,
 	type PortMapperV2Mapping,
@@ -20,14 +19,12 @@ import {
 	type RpcProgramSetup,
 	RpcReplyStat,
 	RpcResponseSchema,
-	RpcType,
+	RpcTypeCoders,
 	RpcUniversalAddress,
 	rpcCallSchemaModel,
 	rpcReplySchemaModel,
-	type SetProgramRequest,
-	type UnsetProgramRequest,
 } from '@luolapeikko/onc-rpcbind-common';
-import type {IXdrBuffer} from '@luolapeikko/onc-xdr';
+import type {InferXdrCodecInput, IXdrBuffer} from '@luolapeikko/onc-xdr';
 
 function normalizeProcedure(prog: number, vers: number, proc: number): string {
 	return `${prog}:${vers}:${proc}`;
@@ -91,7 +88,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 
 			case buildKey(RpcBindV4, 'RPCBPROC_GETADDRLIST'): {
 				this.logger?.debug(`Received RPCBPROC_GETADDRLIST ${reqCall.vers} procedure call`);
-				const rpcb = RpcType.rpcb.decode(xdr);
+				const rpcb = RpcTypeCoders.rpcb.decode(xdr);
 				results = this.getAddrList(rpcb.prog, rpcb.vers);
 				break;
 			}
@@ -109,7 +106,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 			case buildKey(RpcBindV4, 'RPCBPROC_GETADDR'):
 			case buildKey(RpcBindV3, 'RPCBPROC_GETADDR'): {
 				this.logger?.debug(`Received RPCBPROC_GETADDR ${reqCall.vers} procedure call`);
-				const rpcb = RpcType.rpcb.decode(xdr);
+				const rpcb = RpcTypeCoders.rpcb.decode(xdr);
 				results = this.getAddr(rpcb);
 				break;
 			}
@@ -127,7 +124,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 					this.logger?.warn(`Refusing RPCBPROC_UNSET call from ${protofmly}/${proto} due to security`);
 					break;
 				}
-				const rpcb = RpcType.rpcb.decode(xdr);
+				const rpcb = RpcTypeCoders.rpcb.decode(xdr);
 				results = this.setProgram(rpcb);
 				break;
 			}
@@ -150,7 +147,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 					this.logger?.warn(`Refusing RPCBPROC_UNSET call from ${protofmly}/${proto} due to security`);
 					break;
 				}
-				const rpcb = RpcType.rpcb.decode(xdr);
+				const rpcb = RpcTypeCoders.rpcb.decode(xdr);
 				results = this.unsetProgram(rpcb);
 				break;
 			}
@@ -205,7 +202,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 		return xdr.rawBuffer;
 	}
 
-	private setProgram(rpcb: SetProgramRequest): Uint8Array {
+	private setProgram(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): Uint8Array {
 		const key = this.getKey(rpcb.netid, rpcb.prog, rpcb.vers);
 		const notFound = !this.services.has(key);
 		// Check if already exists
@@ -253,13 +250,13 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 		return xdr.sliceUsed();
 	}
 
-	private unsetProgram(rpcb: UnsetProgramRequest): Uint8Array {
+	private unsetProgram(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): Uint8Array {
 		const key = this.getKey(rpcb.netid, rpcb.prog, rpcb.vers);
 		const xdrBuffer = RpcResponseSchema.unsetProgram.encode(this.createXdrBuffer(4), this.services.delete(key));
 		return xdrBuffer.rawBuffer;
 	}
 
-	private getAddr(rpcb: GetAddrRequest): Uint8Array {
+	private getAddr(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): Uint8Array {
 		const key = this.getKey(rpcb.netid, rpcb.prog, rpcb.vers);
 		const service = this.services.get(key);
 		const xdrBuffer = RpcResponseSchema.getAddr.encode(this.createXdrBuffer(1024), service?.entry.maddr ?? '');
@@ -297,7 +294,7 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 		}
 	}
 
-	private buildRpcbEntry(rpcb: SetProgramRequest): RpcbEntry {
+	private buildRpcbEntry(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): RpcbEntry {
 		switch (rpcb.netid) {
 			case 'local':
 				return {

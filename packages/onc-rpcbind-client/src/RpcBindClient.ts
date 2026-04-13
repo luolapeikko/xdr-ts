@@ -1,7 +1,5 @@
 import {
 	callProcedure,
-	type GetAddrListRequest,
-	type GetAddrRequest,
 	type IRpcTransport,
 	type Netbuf,
 	PortMapperV2,
@@ -21,6 +19,7 @@ import {
 	type RpcProgramSetup,
 	type RpcRemoteCallCoder,
 	RpcRequest,
+	type RpcTypeCoders,
 } from '@luolapeikko/onc-rpcbind-common';
 import type {InferXdrCodecInput, InferXdrCodecOutput, IXdrBuffer} from '@luolapeikko/onc-xdr';
 
@@ -55,7 +54,7 @@ export class RpcBindClient {
 		return this.callProcedure(RpcBindV4, 'RPCBPROC_GETSTAT');
 	}
 
-	public getAddr({netid, prog, vers}: GetAddrRequest): Promise<string> {
+	public getAddr({netid, prog, vers}: Omit<InferXdrCodecInput<typeof RpcTypeCoders.rpcb>, 'addr' | 'owner'>): Promise<string> {
 		return this.callProcedure(RpcBindV4, 'RPCBPROC_GETADDR', {netid, prog, vers, addr: '', owner: ''});
 	}
 
@@ -63,11 +62,11 @@ export class RpcBindClient {
 		return this.callProcedure(PortMapperV2, 'PMAPPROC_GETPORT', {prog, prot, vers, port: 0});
 	}
 
-	public getVersAddr({netid, prog, vers}: GetAddrRequest): Promise<string> {
+	public getVersAddr({netid, prog, vers}: Omit<InferXdrCodecInput<typeof RpcTypeCoders.rpcb>, 'addr' | 'owner'>): Promise<string> {
 		return this.callProcedure(RpcBindV4, 'RPCBPROC_GETVERSADDR', {netid, prog, vers, addr: '', owner: ''});
 	}
 
-	public getAddrList({prog, vers}: GetAddrListRequest): Promise<RpcbEntry[]> {
+	public getAddrList({prog, vers}: Omit<InferXdrCodecInput<typeof RpcTypeCoders.rpcb>, 'netid' | 'addr' | 'owner'>): Promise<RpcbEntry[]> {
 		return this.callProcedure(RpcBindV4, 'RPCBPROC_GETADDRLIST', {prog, vers, netid: '' as RpcNetId, addr: '', owner: ''});
 	}
 

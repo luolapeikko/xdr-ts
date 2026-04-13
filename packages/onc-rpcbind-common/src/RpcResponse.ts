@@ -1,4 +1,5 @@
 import type {IXdrBuffer} from '@luolapeikko/onc-xdr';
+import type {IRpcTransport} from './interfaces/IRpcTransport';
 import {
 	RpcDeniedError,
 	type RpcError,
@@ -9,16 +10,15 @@ import {
 	RpcSystemError,
 	RpcUnknownError,
 } from './RpcError';
-import type {IRpcTransport} from './RpcTransport';
 import {RpcAcceptStat, RpcReplyStat, type RpcReplyType, rpcReplySchemaModel} from './schema/RpcReply';
 
-export interface RpcResponseOk {
+export type RpcResponseOk = {
 	ok: true;
 	xdr: IXdrBuffer;
 	reply: RpcReplyType;
 }
 
-export interface RpcResponseError {
+export type RpcResponseError = {
 	ok: false;
 	error: RpcError;
 	reply: RpcReplyType;
