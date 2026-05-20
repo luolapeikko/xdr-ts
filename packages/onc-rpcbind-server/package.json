@@ -32,23 +32,23 @@
     "license": "ISC",
     "devDependencies": {
 		"@avanio/logger-like": "^0.2.12",
-		"@open-draft/deferred-promise": "^2.2.0",
+		"@open-draft/deferred-promise": "^3.0.0",
 		"@luolapeikko/onc-node": "workspace:*",
 		"@luolapeikko/onc-rpcbind-client": "workspace:*",
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
-		"@luolapeikko/result-option": "^2.2.1",
+		"@luolapeikko/result-option": "^2.2.3",
 		"@types/node": "^25.5.0",
 		"@types/ws": "^8.18.1",
 		"minimist": "^1.2.8",
 		"net-address": "^0.0.1",
 		"net-socket-address": "^0.0.1",
 		"unix-socket-address": "^0.0.1",
-		"ws": "^8.20.0"
+		"ws": "^8.20.1"
     },
 	"peerDependencies": {
 		"@avanio/logger-like": ">= 0.0.1",
-		"@open-draft/deferred-promise": ">= 2.2.0",
+		"@open-draft/deferred-promise": ">= 3.0.0",
 		"@luolapeikko/onc-node": "^0.0.1",
 		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
 		"@luolapeikko/onc-xdr": "^0.0.1",

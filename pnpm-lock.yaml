@@ -49,20 +49,20 @@ importers:
         specifier: workspace:*
         version: link:../onc-xdr
       '@luolapeikko/result-option':
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.3
+        version: 2.2.3
       '@open-draft/deferred-promise':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
       net-address:
         specifier: ^0.0.1
-        version: 0.0.1(@luolapeikko/result-option@2.2.1)
+        version: 0.0.1(@luolapeikko/result-option@2.2.3)
       net-socket-address:
         specifier: ^0.0.1
-        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1))
+        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.3))
       unix-socket-address:
         specifier: ^0.0.1
         version: 0.0.1
@@ -106,11 +106,11 @@ importers:
         specifier: workspace:*
         version: link:../onc-xdr
       '@luolapeikko/result-option':
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.3
+        version: 2.2.3
       '@open-draft/deferred-promise':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
@@ -122,16 +122,16 @@ importers:
         version: 1.2.8
       net-address:
         specifier: ^0.0.1
-        version: 0.0.1(@luolapeikko/result-option@2.2.1)
+        version: 0.0.1(@luolapeikko/result-option@2.2.3)
       net-socket-address:
         specifier: ^0.0.1
-        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1))
+        version: 0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.3))
       unix-socket-address:
         specifier: ^0.0.1
         version: 0.0.1
       ws:
-        specifier: ^8.20.0
-        version: 8.20.0
+        specifier: ^8.20.1
+        version: 8.20.1
 
   packages/onc-xdr:
     devDependencies:
@@ -430,8 +430,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@luolapeikko/result-option@2.2.1':
-    resolution: {integrity: sha512-0QffjTixx4gH+SXaIu0l3xZwcM8GedNbvtXX8gDpDxQoyH2Do0taXth9PnTiKPO6OL/tl3I/aS1UIn9jIdbtQg==}
+  '@luolapeikko/result-option@2.2.3':
+    resolution: {integrity: sha512-PkJSEGSp+wEM2yhyNVh/nAqOaEKrQ47hCxV05wsG9ZYDC8Q3YM0qHP85nJo0atRyZPMtO1zqQ84NSySYBtKs6A==}
 
   '@napi-rs/wasm-runtime@1.1.4':
     resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
@@ -439,8 +439,8 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@open-draft/deferred-promise@2.2.0':
-    resolution: {integrity: sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA==}
+  '@open-draft/deferred-promise@3.0.0':
+    resolution: {integrity: sha512-XW375UK8/9SqUVNVa6M0yEy8+iTi4QN5VZ7aZuRFQmy76LRwI9wy5F4YIBU6T+eTe2/DNDo8tqu8RHlwLHM6RA==}
 
   '@oxc-project/types@0.122.0':
     resolution: {integrity: sha512-oLAl5kBpV4w69UtFZ9xqcmTi+GENWOcPF7FCrczTiBbmC0ibXxCwyvZGbO39rCVEuLGAZM84DH0pUIyyv/YJzA==}
@@ -1375,8 +1375,8 @@ packages:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
 
-  ws@8.20.0:
-    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
+  ws@8.20.1:
+    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -1598,7 +1598,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@luolapeikko/result-option@2.2.1': {}
+  '@luolapeikko/result-option@2.2.3': {}
 
   '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
@@ -1607,7 +1607,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@open-draft/deferred-promise@2.2.0': {}
+  '@open-draft/deferred-promise@3.0.0': {}
 
   '@oxc-project/types@0.122.0':
     optional: true
@@ -2095,13 +2095,13 @@ snapshots:
 
   nanoid@3.3.12: {}
 
-  net-address@0.0.1(@luolapeikko/result-option@2.2.1):
+  net-address@0.0.1(@luolapeikko/result-option@2.2.3):
     dependencies:
-      '@luolapeikko/result-option': 2.2.1
+      '@luolapeikko/result-option': 2.2.3
 
-  net-socket-address@0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.1)):
+  net-socket-address@0.0.1(net-address@0.0.1(@luolapeikko/result-option@2.2.3)):
     dependencies:
-      net-address: 0.0.1(@luolapeikko/result-option@2.2.1)
+      net-address: 0.0.1(@luolapeikko/result-option@2.2.3)
 
   obug@2.1.1: {}
 
@@ -2365,7 +2365,7 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  ws@8.20.0: {}
+  ws@8.20.1: {}
 
   y18n@5.0.8: {}
 
