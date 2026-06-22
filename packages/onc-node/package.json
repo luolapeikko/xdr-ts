@@ -1,7 +1,7 @@
 {
-    "name": "@luolapeikko/onc-node",
-    "version": "0.0.1",
-    "description": "",
+	"name": "@luolapeikko/onc-node",
+	"version": "0.0.1",
+	"description": "Service Registration, NodeJs transport implementations, and XDR buffer utilities for ONC RPC protocol.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
@@ -23,23 +23,27 @@
 	"files": [
 		"dist"
 	],
-    "keywords": [],
-    "author": "mharj",
-    "license": "ISC",
-    "devDependencies": {
-        "@luolapeikko/onc-xdr": "workspace:*",
+	"keywords": [
+		"xdr",
+		"onc",
+		"rpc",
+		"rpcbind",
+		"portmapper"
+	],
+	"author": "mharj",
+	"license": "ISC",
+	"devDependencies": {
+		"@luolapeikko/onc-xdr": "workspace:*",
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
-		"@luolapeikko/result-option": "^2.2.3",
 		"@open-draft/deferred-promise": "^3.0.0",
 		"@types/node": "^25.5.0",
 		"net-address": "^0.0.1",
 		"net-socket-address": "^0.0.1",
 		"unix-socket-address": "^0.0.1"
-    },
+	},
 	"peerDependencies": {
 		"@luolapeikko/onc-xdr": "^0.0.1",
 		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
-		"@luolapeikko/result-option": ">= 2.0.0",
 		"@open-draft/deferred-promise": ">= 3.0.0",
 		"@types/node": ">= 24.0.0",
 		"net-address": "^0.0.1",

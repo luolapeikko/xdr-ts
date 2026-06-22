@@ -24,7 +24,7 @@ export class PortMapperV2Res {
 				),
 		};
 	}
-		public static get rpcb_rmtcallres(): IXdrCodec<PortMapperV2CallItResponse<Uint8Array>> {
+	public static get rpcb_rmtcallres(): IXdrCodec<PortMapperV2CallItResponse<Uint8Array>> {
 		return {
 			encode: (xdr, value) => {
 				xdr.writeString(value.addr);

@@ -16,13 +16,13 @@ export type RpcResponseOk = {
 	ok: true;
 	xdr: IXdrBuffer;
 	reply: RpcReplyType;
-}
+};
 
 export type RpcResponseError = {
 	ok: false;
 	error: RpcError;
 	reply: RpcReplyType;
-}
+};
 
 export type RpcResponse = RpcResponseOk | RpcResponseError;
 

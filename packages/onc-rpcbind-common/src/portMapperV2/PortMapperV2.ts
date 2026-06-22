@@ -26,13 +26,12 @@ export type PortMapperV2CallItRequest<A = any> = {
 	vers: number;
 	proc: number;
 	args: A;
-}
+};
 
 export type PortMapperV2CallItResponse<R = any> = {
 	addr: string;
 	results: R;
-}
-
+};
 
 export const PortMapperV2 = {
 	prog: 100000,

@@ -9,7 +9,7 @@ export default defineConfig({
 			provider: 'v8',
 			reporter: ['text'],
 			include: ['**/*.ts'],
-			exclude: ['**/dist/**','**/*-d.ts','**/index.ts'],
+			exclude: ['**/dist/**', '**/*-d.ts', '**/index.ts'],
 		},
 		typecheck: {
 			include: ['**/*.test-d.ts'],

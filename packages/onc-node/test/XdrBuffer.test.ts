@@ -234,9 +234,9 @@ describe('XdrBuffer', () => {
 		});
 
 		it('should write and read negative bigint', () => {
-			xdr.writeDouble(BigInt("-9223372036854775808"));
+			xdr.writeDouble(BigInt('-9223372036854775808'));
 			xdr.rewind();
-			expect(xdr.readDouble()).toBe(BigInt("-9223372036854775808"));
+			expect(xdr.readDouble()).toBe(BigInt('-9223372036854775808'));
 		});
 
 		it('should write and read zero', () => {

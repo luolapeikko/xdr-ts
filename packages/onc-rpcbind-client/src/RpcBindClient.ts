@@ -21,12 +21,7 @@ import {
 	RpcRequest,
 	type RpcTypeCoders,
 } from '@luolapeikko/onc-rpcbind-common';
-import type {InferXdrCodecInput, InferXdrCodecOutput, IXdrBuffer} from '@luolapeikko/onc-xdr';
-
-export type RemoteCallOptions<A, O = void> = {
-	request?: (xdr: IXdrBuffer, value: A) => void;
-	response?: (xdr: IXdrBuffer) => O;
-};
+import type {InferXdrCodecInput, InferXdrCodecOutput} from '@luolapeikko/onc-xdr';
 
 export class RpcBindClient {
 	private transport: IRpcTransport;

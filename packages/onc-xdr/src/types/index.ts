@@ -5,4 +5,3 @@ export * from './XdrObjectSchemaArray';
 export * from './XdrSchema';
 export * from './XdrSchemaTypes';
 export * from './XdrType';
-

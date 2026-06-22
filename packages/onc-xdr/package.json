@@ -1,7 +1,7 @@
 {
-    "name": "@luolapeikko/onc-xdr",
-    "version": "0.0.1",
-    "description": "",
+	"name": "@luolapeikko/onc-xdr",
+	"version": "0.0.1",
+	"description": "Common XDR types and utilities for ONC RPC protocol.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
@@ -23,9 +23,13 @@
 	"files": [
 		"dist"
 	],
-    "keywords": [],
-    "author": "mharj",
-    "license": "ISC",
+	"keywords": [
+		"xdr",
+		"onc",
+		"rpc"
+	],
+	"author": "mharj",
+	"license": "ISC",
 	"devDependencies": {
 		"@types/node": "^25.4.0"
 	},

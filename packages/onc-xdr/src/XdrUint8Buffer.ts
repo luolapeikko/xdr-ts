@@ -224,7 +224,11 @@ export class XdrUint8Buffer implements IXdrBuffer<Uint8Array> {
 		return this;
 	}
 
-	public writeList<T>(items: T[], itemWriter: (buffer: IXdrBuffer<Uint8Array>, item: T) => void, flagWriter?: (buffer: IXdrBuffer<Uint8Array>, val: boolean) => void): this {
+	public writeList<T>(
+		items: T[],
+		itemWriter: (buffer: IXdrBuffer<Uint8Array>, item: T) => void,
+		flagWriter?: (buffer: IXdrBuffer<Uint8Array>, val: boolean) => void,
+	): this {
 		for (const item of items) {
 			this.writeBoolean(true, flagWriter);
 			itemWriter(this, item);

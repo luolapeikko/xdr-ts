@@ -26,8 +26,7 @@ const forwardingFailurePattern = /Program Unavailable|UDP Timeout|TCP Timeout/;
  *
  * Without -r, rpcbind silently drops the forwarded inner call and the client times out.
  */
-
-describe('Rpc Abstraction (Transport Based)', () => {
+describe('Rpc Abstraction (Transport Based)', {skip: process.env.CI === 'true'}, () => {
 	const tinyService = new TinyService({
 		procedure: {proc: tinyServiceCall.proc, vers: tinyServiceCall.vers, prog: tinyServiceCall.prog},
 	});

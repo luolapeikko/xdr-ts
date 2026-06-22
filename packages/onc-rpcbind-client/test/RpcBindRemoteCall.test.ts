@@ -12,7 +12,11 @@ const tinyServiceCall = {
 	response: XdrType.uint,
 } as const satisfies RpcRemoteCallCoder;
 
-describe('Rpc Abstraction (Transport Based)', () => {
+/**
+ * This unit test requires a local rpcbind instance running.
+ * # rpcbind -i -d -w -f -r -l 2>&1 | tee -a /tmp/rpcbind.log
+ */
+describe('Rpc Abstraction (Transport Based) using system rpcbind', {skip: process.env.CI === 'true'}, () => {
 	const tinyService = new TinyService({
 		procedure: {proc: tinyServiceCall.proc, vers: tinyServiceCall.vers, prog: tinyServiceCall.prog},
 	});

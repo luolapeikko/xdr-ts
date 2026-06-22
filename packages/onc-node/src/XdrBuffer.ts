@@ -219,7 +219,11 @@ export class XdrBuffer implements IXdrBuffer<Buffer> {
 		return this;
 	}
 
-	public writeList<T>(items: T[], itemWriter: (buffer: IXdrBuffer<Buffer>, item: T) => void, flagWriter?: (buffer: IXdrBuffer<Buffer>, val: boolean) => void): this {
+	public writeList<T>(
+		items: T[],
+		itemWriter: (buffer: IXdrBuffer<Buffer>, item: T) => void,
+		flagWriter?: (buffer: IXdrBuffer<Buffer>, val: boolean) => void,
+	): this {
 		for (const item of items) {
 			this.writeBoolean(true, flagWriter);
 			itemWriter(this, item);

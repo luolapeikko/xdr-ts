@@ -19,7 +19,7 @@ export class RpcUniversalAddress {
 		return {host, port};
 	}
 
-    private constructor() {
-        throw new Error('RpcUniversalAddress is a static utility class and cannot be instantiated');
-    }
+	private constructor() {
+		throw new Error('RpcUniversalAddress is a static utility class and cannot be instantiated');
+	}
 }

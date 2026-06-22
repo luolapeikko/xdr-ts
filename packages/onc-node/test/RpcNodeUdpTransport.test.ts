@@ -95,7 +95,7 @@ describe('RpcNodeUdpTransport', () => {
 			} catch (err) {
 				expect(err).toBeDefined();
 			}
-            transport.close();
+			transport.close();
 		});
 		it('should handle broadcast getTime with bind port', async () => {
 			transport = new RpcNodeUdpTransport({
@@ -109,8 +109,8 @@ describe('RpcNodeUdpTransport', () => {
 			if (!response.ok) {
 				throw response.error;
 			}
-            expect(response.xdr.readUInt()).toBeGreaterThan(0);
-            transport.close();
+			expect(response.xdr.readUInt()).toBeGreaterThan(0);
+			transport.close();
 		});
 	});
 

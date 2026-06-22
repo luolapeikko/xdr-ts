@@ -9,7 +9,11 @@ const tinyServiceCall = {
 	decoder: XdrType.UInt<number>().decode,
 } as const satisfies RpcCallType<void, number>;
 
-describe('RpcBind GETTIME', () => {
+/**
+ * This unit test requires a local rpcbind instance running.
+ * # rpcbind -i -d -w -f -r -l 2>&1 | tee -a /tmp/rpcbind.log
+ */
+describe('RpcBind GETTIME', {skip: process.env.CI === 'true'}, () => {
 	const tinyService = new TinyService({
 		procedure: tinyServiceCall.procedure,
 	});

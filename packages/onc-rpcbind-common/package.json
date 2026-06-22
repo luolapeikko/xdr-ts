@@ -1,7 +1,7 @@
 {
     "name": "@luolapeikko/onc-rpcbind-common",
     "version": "0.0.1",
-    "description": "",
+    "description": "Common schemas and utilities for ONC RPC rpcbind implementations.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
@@ -23,7 +23,13 @@
 	"files": [
 		"dist"
 	],
-    "keywords": [],
+	"keywords": [
+		"xdr",
+		"onc",
+		"rpc",
+		"rpcbind",
+		"portmapper"
+	],
     "author": "mharj",
     "license": "ISC",
     "devDependencies": {

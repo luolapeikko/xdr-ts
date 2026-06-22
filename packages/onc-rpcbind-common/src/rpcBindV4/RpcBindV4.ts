@@ -11,7 +11,7 @@ export type RpcbsAddrList = {
 	success: number;
 	failure: number;
 	netid: RpcNetId;
-}
+};
 
 export type RpcbsRmtCallList = {
 	prog: number;
@@ -21,7 +21,7 @@ export type RpcbsRmtCallList = {
 	failure: number;
 	indirect: number;
 	netid: RpcNetId;
-}
+};
 
 export type RpcbStat = {
 	info: number[];
@@ -29,7 +29,7 @@ export type RpcbStat = {
 	unsetinfo: number;
 	addrinfo: RpcbsAddrList[];
 	rmtinfo: RpcbsRmtCallList[];
-}
+};
 
 export const RpcBindV4 = {
 	prog: 100000,

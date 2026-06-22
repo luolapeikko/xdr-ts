@@ -4,7 +4,6 @@ import {
 	programAsRpcProcedure,
 	RpcAuthFlavor,
 	RpcBindV3,
-	RpcBindV4,
 	RpcMsgType,
 	RpcReplyStat,
 	RpcRequest,

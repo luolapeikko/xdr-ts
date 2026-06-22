@@ -30,10 +30,12 @@ describe('RpcBind GETTIME', () => {
 		// VERF FLAVOR: 00 00 00 00 (4 bytes, NONE)
 		// VERF LENGTH: 00 00 00 00 (4 bytes)
 
-		expect(payload.toString('hex'), `Payload Hex: ${payload.toString('hex')}`).toBe('123456780000000000000002000186a0000000030000000600000000000000000000000000000000');
+		expect(payload.toString('hex'), `Payload Hex: ${payload.toString('hex')}`).toBe(
+			'123456780000000000000002000186a0000000030000000600000000000000000000000000000000',
+		);
 	});
 
-	it('should send GETTIME call to rpcbind on localhost:111 (UDP) and receive response', async () => {
+	it('should send GETTIME call to rpcbind on localhost:111 (UDP) and receive response', {skip: process.env.CI === 'true'}, async () => {
 		const client = dgram.createSocket('udp4');
 
 		const buffer = rpcCallSchemaModel.encode(new XdrBuffer(1024), {
@@ -94,7 +96,7 @@ describe('RpcBind GETTIME', () => {
 		expect(timestamp, `Remote Time (UDP): ${new Date(timestamp * 1000).toLocaleString()}`).toBeGreaterThan(0);
 	});
 
-	it('should send GETTIME call to rpcbind on multiple addresses (TCP) and receive response', async () => {
+	it('should send GETTIME call to rpcbind on multiple addresses (TCP) and receive response', {skip: process.env.CI === 'true'}, async () => {
 		const net = await import('node:net');
 		const buffer = rpcCallSchemaModel.encode(new XdrBuffer(1024), {
 			xid: Math.floor(Math.random() * 0xffffffff),

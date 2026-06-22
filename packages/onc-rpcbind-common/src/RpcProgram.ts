@@ -18,7 +18,7 @@ export type RpcRemoteCallCoder = {
 	proc: number;
 	request?: IXdrCodec<any>;
 	response?: IXdrCodec<any>;
-}
+};
 
 export function programAsRpcProcedure<TProcedures extends Record<string, RpcProgramCoder>, TProcedure extends keyof TProcedures>(
 	setup: RpcProgramSetup<TProcedures>,

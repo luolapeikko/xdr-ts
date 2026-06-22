@@ -11,7 +11,7 @@ export type RpcbType = {
 	netid: RpcNetId;
 	addr: string;
 	owner: string;
-}
+};
 
 export const RpcResponseSchema = {
 	setProgram: new XdrSchema(XdrType.Boolean()),

@@ -1,7 +1,7 @@
 {
-    "name": "@luolapeikko/onc-rpcbind-client",
-    "version": "0.0.1",
-    "description": "",
+	"name": "@luolapeikko/onc-rpcbind-client",
+	"version": "0.0.1",
+	"description": "Client implementation for ONC RPC rpcbind protocol.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
@@ -23,15 +23,21 @@
 	"files": [
 		"dist"
 	],
-    "keywords": [],
-    "author": "mharj",
-    "license": "ISC",
-    "devDependencies": {
+	"keywords": [
+		"xdr",
+		"onc",
+		"rpc",
+		"rpcbind",
+		"portmapper"
+	],
+	"author": "mharj",
+	"license": "ISC",
+	"devDependencies": {
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
-        "@luolapeikko/onc-xdr": "workspace:*",
+		"@luolapeikko/onc-xdr": "workspace:*",
 		"@luolapeikko/onc-node": "workspace:*",
 		"@types/node": "^25.5.0"
-    },
+	},
 	"peerDependencies": {
 		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
 		"@luolapeikko/onc-xdr": "^0.0.1"

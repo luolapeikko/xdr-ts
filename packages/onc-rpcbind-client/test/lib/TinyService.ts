@@ -135,7 +135,6 @@ export class TinyService {
 		}
 	}
 
-
 	private startUdp(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.udpSocket = dgram.createSocket('udp4');
