@@ -36,6 +36,7 @@
 	],
 	"author": "mharj",
 	"license": "MIT",
+	"repository": "github:luolapeikko/xdr-ts",
 	"devDependencies": {
 		"@avanio/logger-like": "^0.2.12",
 		"@luolapeikko/onc-node": "workspace:*",

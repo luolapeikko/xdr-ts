@@ -31,7 +31,8 @@
 		"portmapper"
 	],
 	"author": "mharj",
-	"license": "ISC",
+	"license": "MIT",
+	"repository": "github:luolapeikko/xdr-ts",
 	"devDependencies": {
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
