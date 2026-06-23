@@ -1,7 +1,7 @@
 {
-    "name": "@luolapeikko/onc-rpcbind-common",
-    "version": "0.0.1",
-    "description": "Common schemas and utilities for ONC RPC rpcbind implementations.",
+	"name": "@luolapeikko/onc-rpcbind-common",
+	"version": "0.0.1",
+	"description": "Common schemas and utilities for ONC RPC rpcbind implementations.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
@@ -30,11 +30,12 @@
 		"rpcbind",
 		"portmapper"
 	],
-    "author": "mharj",
-    "license": "ISC",
-    "devDependencies": {
-        "@luolapeikko/onc-xdr": "workspace:*"
-    },
+	"author": "mharj",
+	"license": "MIT",
+	"repository": "github:luolapeikko/xdr-ts",
+	"devDependencies": {
+		"@luolapeikko/onc-xdr": "workspace:*"
+	},
 	"peerDependencies": {
 		"@luolapeikko/onc-xdr": "v0.0.1"
 	}
