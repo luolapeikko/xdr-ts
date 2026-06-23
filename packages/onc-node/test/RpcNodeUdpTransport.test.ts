@@ -97,6 +97,7 @@ describe('RpcNodeUdpTransport', () => {
 			}
 			transport.close();
 		});
+
 		it('should handle broadcast getTime with bind port', {skip: process.env.CI === 'true'}, async () => {
 			transport = new RpcNodeUdpTransport({
 				host: '127.0.0.1',
