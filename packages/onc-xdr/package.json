@@ -29,7 +29,8 @@
 		"rpc"
 	],
 	"author": "mharj",
-	"license": "ISC",
+	"license": "MIT",
+	"repository": "github:luolapeikko/xdr-ts",
 	"devDependencies": {
 		"@types/node": "^25.4.0"
 	},
