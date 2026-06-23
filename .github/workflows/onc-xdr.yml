@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/onc-xdr/**"
+      - "packages/**"
       - ".github/workflows/onc-xdr.yml"
       - ".github/workflows/module.yml"
 
