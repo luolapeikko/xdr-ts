@@ -18,7 +18,6 @@ import {
 	type RpcProgramCoder,
 	type RpcProgramSetup,
 	RpcReplyStat,
-	RpcResponseSchema,
 	RpcTypeCoders,
 	RpcUniversalAddress,
 	rpcCallSchemaModel,
@@ -252,14 +251,14 @@ export abstract class AbstractRpcBindServer<B extends Uint8Array> {
 
 	private unsetProgram(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): Uint8Array {
 		const key = this.getKey(rpcb.netid, rpcb.prog, rpcb.vers);
-		const xdrBuffer = RpcResponseSchema.unsetProgram.encode(this.createXdrBuffer(4), this.services.delete(key));
+		const xdrBuffer = PortMapperV2.procedures.PMAPPROC_UNSET.response.encode(this.createXdrBuffer(4), this.services.delete(key));
 		return xdrBuffer.rawBuffer;
 	}
 
 	private getAddr(rpcb: InferXdrCodecInput<typeof RpcTypeCoders.rpcb>): Uint8Array {
 		const key = this.getKey(rpcb.netid, rpcb.prog, rpcb.vers);
 		const service = this.services.get(key);
-		const xdrBuffer = RpcResponseSchema.getAddr.encode(this.createXdrBuffer(1024), service?.entry.maddr ?? '');
+		const xdrBuffer = RpcBindV4.procedures.RPCBPROC_GETADDR.response.encode(this.createXdrBuffer(1024), service?.entry.maddr ?? '');
 		return xdrBuffer.sliceUsed();
 	}
 

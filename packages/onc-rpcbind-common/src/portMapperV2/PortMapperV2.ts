@@ -33,6 +33,10 @@ export type PortMapperV2CallItResponse<R = any> = {
 	results: R;
 };
 
+/**
+ * Port Mapper Version 2
+ * @see https://www.rfc-editor.org/rfc/rfc1833.html
+ */
 export const PortMapperV2 = {
 	prog: 100000,
 	vers: 2,
@@ -42,28 +46,28 @@ export const PortMapperV2 = {
 		},
 		PMAPPROC_SET: {
 			proc: 1,
-			request: PortMapperV2Req.Mapping(),
+			request: PortMapperV2Req.mapping,
 			response: XdrType.boolean,
 		},
 		PMAPPROC_UNSET: {
 			proc: 2,
-			request: PortMapperV2Req.Mapping(),
+			request: PortMapperV2Req.mapping,
 			response: XdrType.boolean,
 		},
 		PMAPPROC_GETPORT: {
 			proc: 3,
-			request: PortMapperV2Req.Mapping(),
+			request: PortMapperV2Req.mapping,
 			response: XdrType.uint,
 		},
 		PMAPPROC_DUMP: {
 			proc: 4,
 			request: undefined,
-			response: PortMapperV2Res.DUMP(),
+			response: PortMapperV2Res.pmaplist,
 		},
 		PMAPPROC_CALLIT: {
 			proc: 5,
-			request: PortMapperV2Req.rpcb_rmtcallargs,
-			response: PortMapperV2Res.rpcb_rmtcallres,
+			request: PortMapperV2Req.call_args,
+			response: PortMapperV2Res.call_result,
 		},
 	},
 } as const satisfies RpcProgramSetup;

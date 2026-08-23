@@ -1,6 +1,6 @@
 {
 	"name": "@luolapeikko/onc-rpcbind-common",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Common schemas and utilities for ONC RPC rpcbind implementations.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",

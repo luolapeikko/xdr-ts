@@ -31,8 +31,8 @@ export const RpcBindV3 = {
 		},
 		RPCBPROC_CALLIT: {
 			proc: 5,
-			request: PortMapperV2Req.rpcb_rmtcallargs,
-			response: PortMapperV2Res.rpcb_rmtcallres,
+			request: PortMapperV2Req.call_args,
+			response: PortMapperV2Res.call_result,
 		},
 		RPCBPROC_GETTIME: {
 			proc: 6,

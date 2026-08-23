@@ -1,4 +1,3 @@
-import {XdrSchema, XdrType} from '@luolapeikko/onc-xdr';
 import type {RpcNetId} from '../RpcBindTypes';
 
 /**
@@ -12,9 +11,3 @@ export type RpcbType = {
 	addr: string;
 	owner: string;
 };
-
-export const RpcResponseSchema = {
-	setProgram: new XdrSchema(XdrType.Boolean()),
-	unsetProgram: new XdrSchema(XdrType.Boolean()),
-	getAddr: new XdrSchema(XdrType.String()),
-} as const satisfies Record<string, XdrSchema>;

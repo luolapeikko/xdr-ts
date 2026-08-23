@@ -2,7 +2,7 @@ import type {IXdrCodec} from '@luolapeikko/onc-xdr';
 import type {PortMapperV2CallItResponse, PortMapperV2Mapping} from './PortMapperV2';
 
 export class PortMapperV2Res {
-	public static DUMP(): IXdrCodec<PortMapperV2Mapping[]> {
+	public static get pmaplist(): IXdrCodec<PortMapperV2Mapping[]> {
 		return {
 			encode: (xdr, value) => {
 				return xdr.writeList(value, (x, v) => {
@@ -24,7 +24,7 @@ export class PortMapperV2Res {
 				),
 		};
 	}
-	public static get rpcb_rmtcallres(): IXdrCodec<PortMapperV2CallItResponse<Uint8Array>> {
+	public static get call_result(): IXdrCodec<PortMapperV2CallItResponse<Uint8Array>> {
 		return {
 			encode: (xdr, value) => {
 				xdr.writeString(value.addr);

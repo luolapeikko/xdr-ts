@@ -1,6 +1,6 @@
 {
 	"name": "@luolapeikko/onc-rpcbind-server",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Server implementation for ONC RPC rpcbind services.",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
@@ -55,7 +55,7 @@
 	"peerDependencies": {
 		"@avanio/logger-like": ">= 0.0.1",
 		"@luolapeikko/onc-node": "^0.0.1",
-		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
+		"@luolapeikko/onc-rpcbind-common": "^0.0.2",
 		"@luolapeikko/onc-xdr": "^0.0.1",
 		"@open-draft/deferred-promise": ">= 3.0.0",
 		"minimist": ">= 1.2.0",
