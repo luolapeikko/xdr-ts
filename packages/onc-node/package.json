@@ -37,18 +37,18 @@
 		"@luolapeikko/onc-xdr": "workspace:*",
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@open-draft/deferred-promise": "^3.0.0",
-		"@types/node": "^25.5.0",
-		"net-address": "^0.0.1",
-		"net-socket-address": "^0.0.1",
-		"unix-socket-address": "^0.0.1"
+		"@types/node": "^25.9.8",
+		"net-address": "^0.2.0",
+		"net-socket-address": "^0.2.0",
+		"unix-socket-address": "^0.2.0"
 	},
 	"peerDependencies": {
 		"@luolapeikko/onc-xdr": "^0.0.1",
 		"@luolapeikko/onc-rpcbind-common": "^0.0.1",
 		"@open-draft/deferred-promise": ">= 3.0.0",
 		"@types/node": ">= 24.0.0",
-		"net-address": "^0.0.1",
-		"net-socket-address": "^0.0.1",
-		"unix-socket-address": "^0.0.1"
+		"net-address": "^0.2.0",
+		"net-socket-address": "^0.2.0",
+		"unix-socket-address": "^0.2.0"
 	}
 }
