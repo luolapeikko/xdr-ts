@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: luolapeikko/github-actions/read-package-info@4cfb7e8c7b146d81e5dd64b37a5e4da6418c5627 # v0
+      - uses: luolapeikko/github-actions/read-package-info@e320bbeabb85a5b484eb3ecdf5a839492307ff83 # v0
         with:
           working-directory: ${{ inputs.package-path }}
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
