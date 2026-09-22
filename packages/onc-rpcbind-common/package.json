@@ -37,6 +37,6 @@
 		"@luolapeikko/onc-xdr": "workspace:*"
 	},
 	"peerDependencies": {
-		"@luolapeikko/onc-xdr": "v0.0.1"
+		"@luolapeikko/onc-xdr": ">=0.0.1"
 	}
 }

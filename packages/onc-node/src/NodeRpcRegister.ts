@@ -98,7 +98,7 @@ export class NodeRpcRegister {
 			prog: this.#prog.prog,
 			vers: this.#prog.vers,
 			netid: endpoint.netid,
-			addr: endpoint.addr.family === 'unix' ? endpoint.addr.toString() : RpcUniversalAddress.from(endpoint.addr.asNodeListenerOptions()).toString(),
+			addr: endpoint.addr.family === 'unix' ? endpoint.addr.toString() : RpcUniversalAddress.from(endpoint.addr.asNodeListener()).toString(),
 			owner: this.#owner,
 		};
 	}

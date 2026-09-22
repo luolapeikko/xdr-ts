@@ -32,9 +32,9 @@
 	"license": "MIT",
 	"repository": "github:luolapeikko/xdr-ts",
 	"devDependencies": {
-		"@types/node": "^25.4.0"
+		"@types/node": "^25.9.8"
 	},
 	"peerDependencies": {
-		"@types/node": ">= 25.0.0"
+		"@types/node": ">=25.0.0"
 	}
 }
