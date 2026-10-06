@@ -37,7 +37,7 @@
 		"@luolapeikko/onc-node": "workspace:*",
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
-		"@types/node": "^25.9.8"
+		"@types/node": "^25.9.9"
 	},
 	"peerDependencies": {
 		"@luolapeikko/onc-rpcbind-common": ">=0.0.1",

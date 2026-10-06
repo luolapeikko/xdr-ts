@@ -44,13 +44,13 @@
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
 		"@open-draft/deferred-promise": "^3.0.0",
-		"@types/node": "^25.9.8",
-		"@types/ws": "^8.18.1",
+		"@types/node": "^25.9.9",
+		"@types/ws": "^8.18.2",
 		"minimist": "^1.2.8",
 		"net-address": "^0.2.0",
 		"net-socket-address": "^0.2.0",
 		"unix-socket-address": "^0.2.0",
-		"ws": "^8.21.3"
+		"ws": "^8.22.0"
 	},
 	"peerDependencies": {
 		"@avanio/logger-like": ">=0.0.1",
