@@ -37,7 +37,7 @@
 		"@luolapeikko/onc-rpcbind-common": "workspace:*",
 		"@luolapeikko/onc-xdr": "workspace:*",
 		"@open-draft/deferred-promise": "^3.0.0",
-		"@types/node": "^25.9.8",
+		"@types/node": "^25.9.9",
 		"net-address": "^0.2.0",
 		"net-socket-address": "^0.2.0",
 		"unix-socket-address": "^0.2.0"
